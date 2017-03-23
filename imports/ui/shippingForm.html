@@ -1,0 +1,118 @@
+<template name="shippingForm">
+  <tbody>
+    <tr>
+      <td colspan=6>
+        <form class="ui large form">
+          <div class="field">
+            <label>Choisissez votre mode de livraison / retrait</label>
+            <div class="ui selection dropdown js-deliver-mode">
+              <input type="hidden" name="mode">
+              <div class="default text">Livraison ou retrait sur place</div>
+              <i class="dropdown icon"></i>
+              <div class="menu">
+                {{#each mode in shippingOptions.modes}}
+                <div class="item" data-value="{{mode.tag}}">
+                  <i class="{{mode.icon}} icon"></i>
+                  {{mode.description}}
+                </div>
+                {{/each}}
+              </div>
+            </div>
+          </div>
+          
+          {{#if isDelivered}}
+          <div class="field js-deliver-datetime">
+            <div class="fields">
+              <div class="nine wide field">
+                <label>Date de {{#if isBicycle}}livraison{{else}}retrait{{/if}}</label>
+                <div class="ui fluid selection dropdown js-deliver-date">
+                  <input type="hidden" name="date">
+                  <div class="default text css-date">Date</div>
+                  <i class="dropdown icon"></i>
+                  <div class="menu">
+                    {{#each date in shippingDates}}
+                    <div class="item css-date" data-value="{{date.value}}">
+                      {{date.text}}
+                    </div>
+                    {{/each}}
+                  </div>
+                </div>
+              </div>
+              
+              <div class="seven wide field">
+                <label>Heure de {{#if isBicycle}}livraison{{else}}retrait{{/if}}</label>
+                <div class="ui fluid selection dropdown js-deliver-time">
+                  <input type="hidden" name="time">
+                  <div class="default text">Heure</div>
+                  <i class="dropdown icon"></i>
+                  <div class="menu">
+                    {{#each time in shippingSlots}}
+                    <div class="item" data-value="{{time}}">
+                      {{time}}
+                    </div>
+                    {{/each}}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {{#if isBicycle}}
+          <div class="grouped fields js-deliver-location">
+            <div class="field">
+              <label>Adresse de livraison</label>
+              <input type="text" name="address" value="{{shipping.address}}" placeholder="Adresse de livraison">
+            </div>
+            <div class="field">
+              <label>Détails sur l'adresse</label>
+              <textarea name="details" value="{{shipping.details}}" placeholder="Codes, interphone, gardien, bâtiment, étage, porte secrète, etc." rows="2"></textarea>
+            </div>
+            <div class="fields">
+              <div class="four wide field">
+                <label>Code postal</label>
+                <input type="text" name="zip" value="{{shipping.zip}}" placeholder="Code">
+              </div>
+              <div class="twelve wide field">
+                <label>Ville</label>
+                <input type="text" name="city" value="{{shipping.city}}" placeholder="Ville">
+              </div>
+            </div>
+          </div>
+          {{/if}}
+        {{/if}}
+        </form>
+      </td>
+    </tr>
+  </tbody>
+  {{#if isDelivered}}
+  <tfoot class="ui header">
+    <tr>
+      <th class="ui center aligned" colspan=3>
+        <span class="ui header">
+          {{#if isBicycle}}
+            Tarif de livraison <div class="sub header">(offert à partir de 40 € de commande)</div>
+          {{else}}
+            Retrait sur place
+          {{/if}}
+        </span>
+      </th>
+      <th class="ui right aligned" colspan=3>
+        <span class="ui tag big yellow label">
+          {{#if isBicycle}}
+            {{#if invoice.shipping}}
+              {{#if shipping.free}}
+                Offert
+              {{else}}
+                {{invoice.shipping}} €
+              {{/if}}
+            {{else}}
+                Informations manquantes
+            {{/if}}
+          {{else}}
+            Gratuit
+          {{/if}}
+        </span>
+      </th>
+    </tr>
+  </tfoot>
+  {{/if}}
+</template>

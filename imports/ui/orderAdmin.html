@@ -1,0 +1,226 @@
+<template name="orderAdmin">
+    {{> menuAdmin title="Gestion des commandes"}}
+    <div class="ui main" style="padding:1em">
+        <div class="ui stackable two column grid">
+            <div class="column">
+                {{#each date in dates}}
+                <div class="ui segments">
+                    <div class="ui segment">
+                        <div class="ui middle aligned divided selection list">
+                                <h2 class="ui header css-date">
+                                    {{formatDate date}}
+                                </h2>
+                                {{#each order in (orders date)}}
+                                    {{> orderList (selectOrder order)}}
+                                {{/each}}
+                        </div>
+                    </div>
+                </div>
+                {{/each}}
+            </div>
+            <div class="column" id="context">
+                {{#if editedOrder}}
+                    {{> orderEdit (selectOrder editedOrder)}}
+                {{/if}}
+            </div>
+        </div>
+    </div>
+</template>
+
+<template name="orderList">
+    <div class="item">
+        {{#if (exist order)}}
+        <div class="content">
+            <div class="ui horizontal large right floated labels">
+                <div class="ui {{#if order.workflow.paid}}pink{{/if}} label">{{total order}} €</div>
+                <div class="ui {{#if order.workflow.prepared}}yellow{{/if}} label"><i class="cube icon"></i>{{order.invoice.quantity}}</div>
+                <div class="ui {{#if order.workflow.delivered}}teal{{/if}} label" style="text-transform:capitalize;">
+                    {{#if (bicycle order)}}
+                        <i class="bicycle icon"></i>
+                    {{else}}
+                        <i class="home icon"></i>
+                    {{/if}}
+                    {{assignment order}}
+                </div>
+            </div>
+            <h3 class="header">
+            {{order.shipping.time}} > <span style="text-transform:uppercase">{{order.client.lastname}}</span> 
+            </h3>
+            <div class="description">
+                {{command order}}
+            </div>
+            {{#if (bicycle order)}}
+            <div class="description">
+                {{order.shipping.address}} {{order.shipping.zip}} {{order.shipping.city}}
+            </div>
+            {{/if}}
+        </div>
+        {{/if}}
+    </div>
+</template>
+
+<template name="orderEdit">
+    <div class="ui sticky segments">
+        <div class="ui segment large form js-order-edit">
+            <h3 class="ui header">
+                <i class="cube icon"></i>Commande
+            </h3>
+            <div class="three fields">
+              <div class="field">
+                <label>Nom</label>
+                {{order.client.firstname}} <span style="text-transform: uppercase;">{{order.client.lastname}}</span>
+              </div>
+              <div class="field">
+                <label>Mél</label>
+                {{order.client.email}}
+              </div>
+              <div class="field">
+                <label>Téléphone</label>
+                {{formatPhone order.client.phone}}
+              </div>
+            </div>
+            <div class="three fields">
+                <div class="field">
+                    <label>Panier</label>
+                    {{command order}}
+                </div>
+                <div class="field">
+                    <label>Quantité</label>
+                    {{order.invoice.quantity}} articles
+                </div>
+                <div class="field">
+                    <label>Total</label>
+                    {{total order}} €
+                </div>
+            </div>
+        </div>
+        <div class="ui segment large form">
+            <h3 class="ui header">
+                {{#if (bicycle order)}}
+                <i class="bicycle icon"></i>Livraison à vélo
+                {{else}}
+                <i class="home icon"></i>Retrait sur place
+                {{/if}}
+            </h3>
+            <div class="three fields">
+                <div class="field">
+                    <label>Adresse</label>
+                    {{#if (bicycle order)}}
+                        {{order.shipping.address}} {{order.shipping.zip}} {{order.shipping.city}}
+                    {{else}}
+                        <span style="text-transform:capitalize;">Atelier {{order.shipping.mode}}</span>
+                    {{/if}}
+                </div>
+                <div class="field">
+                    <label>Date</label>
+                    <div class="ui fluid selection dropdown js-order-date">
+                      <input type="hidden" name="date" value="{{order.shipping.date}}">
+                      <div class="text css-date">{{formatDate order.shipping.date}}</div>
+                      <i class="dropdown icon"></i>
+                      <div class="menu">
+                        {{#each date in shippingDates}}
+                        <div class="item css-date" data-value="{{date.value}}">
+                          {{date.text}}
+                        </div>
+                        {{/each}}
+                      </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Heure</label>
+                    <div class="ui fluid selection dropdown js-order-time">
+                      <input type="hidden" name="time" value="{{order.shipping.time}}">
+                      <div class="text">{{order.shipping.time}}</div>
+                      <i class="dropdown icon"></i>
+                      <div class="menu">
+                        {{#each time in shippingSlots}}
+                        <div class="item" data-value="{{time}}">
+                          {{time}}
+                        </div>
+                        {{/each}}
+                      </div>
+                    </div>
+                </div>
+            </div>
+            {{#if (bicycle order)}}
+            <div class="field">
+                <div class="field">
+                  <label>Détails sur l'adresse</label>
+                  <textarea name="details" value="{{order.shipping.details}}" placeholder="Codes, interphone, gardien, bâtiment, étage, porte secrète, etc." rows="2"></textarea>
+                </div>
+            </div>
+            {{/if}}
+        </div>
+        <div class="ui segment large form js-order-workflow">
+            <h3 class="ui header">
+                    <i class="tasks icon"></i>Suivi
+            </h3>
+            <div class="four fields">
+                <div class="field">
+                    <a class="ui fluid large {{#if workflow.paid}}pink{{/if}} label" name="paid" style="text-align:center;">
+                        <i class="user icon"></i>Payée
+                    </a>
+                </div>
+                <div class="field">
+                    <a class="ui fluid large {{#if workflow.prepared}}yellow{{/if}} label" name="prepared" style="text-align:center;">
+                        <i class="cube icon"></i>Préparée
+                    </a>
+                </div>
+                <div class="field">
+                    <a class="ui fluid large {{#if workflow.delivered}}teal{{/if}} label" name="delivered" style="text-align:center;">
+                        {{#if (bicycle order)}}
+                        <i class="bicycle icon"></i>Livrée
+                        {{else}}
+                        <i class="home icon"></i>Retirée
+                        {{/if}}
+                    </a>
+                </div>
+                <div class="field">
+                    <a class="ui fluid large {{#if workflow.canceled}}black{{/if}} label" name="canceled" style="text-align:center;">
+                        <i class="cancel icon"></i>Annulée
+                    </a>
+                </div>
+            </div>
+            <div class="fields">
+                <div class="four wide field">
+                    <label>Affectation</label>
+                    <div class="ui fluid selection dropdown js-order-assignment" style="text-transform:capitalize;">
+                      <input type="hidden" name="assignment" value="{{order.workflow.assignment}}">
+                      <div class="text">{{order.workflow.assignment}}</div>
+                      <i class="dropdown icon"></i>
+                      <div class="menu">
+                        <div class="item" data-value="aucune" style="text-transform:capitalize;">aucune</div>
+                        <div class="item" data-value="nord" style="text-transform:capitalize;">nord</div>
+                        <div class="item" data-value="sud" style="text-transform:capitalize;">sud</div>
+                      </div>
+                    </div>
+                </div>
+                <div class="twelve wide field">
+                    <label>Commentaires</label>
+                    <textarea name="comments" value="{{order.workflow.comments}}" placeholder="Commentaires sur la commande" rows="3"></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="ui segment large form {{#unless workflow.canceled}}hidden{{/unless}}">
+            <h3 class="ui header">
+                <i class="code icon"></i>Références
+            </h3>
+            <div class="two fields">
+                <div class="field">
+                    <label>_id</label>
+                    {{order._id}}
+                </div>
+                <div class="field">
+                    <label>_charge</label>
+                    {{order.charge.id}}
+                </div>
+            </div>
+        </div>
+        <div class="ui segment right aligned">
+            <button class="positive ui button js-order-update" type="button">Enregistrer</button>
+            <button class="ui button js-order-cancel" type="button">Annuler</button>
+            <button class="negative ui button js-order-delete {{#unless workflow.canceled}}hidden{{/unless}}" type="button">Supprimer</button>
+        </div>
+    </div>
+</template>
+

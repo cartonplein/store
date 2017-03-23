@@ -1,0 +1,7 @@
+{
+  "galaxy.meteor.com": {
+     "env": {
+       "MONGO_URL": "mongodb://cartonplein:papiervide@ds013941.mlab.com:13941/cartonplein"
+     }
+   }
+}

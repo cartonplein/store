@@ -1,0 +1,112 @@
+<template name="productAdmin">
+    {{> menuAdmin title="Gestion des produits"}}
+    <div class="ui main container">
+        <div class="ui two column grid">
+            <div class="column">                
+                <div class="ui segments">
+                    <div class="ui segment">
+                        <h1 class="ui header">Catalogue des produits</h1>
+                    </div>
+                    <div class="ui segment">
+                        <div class="ui middle aligned divided selection list">
+                            {{#each product in products}}
+                              {{> productList (selectProduct product)}}
+                            {{/each}}
+                        </div>
+                    </div>
+                    <div class="ui segment right aligned">
+                        {{#if editedProduct}}
+                        <button class="ui button js-product-close" type="button">Fermer</button>
+                        {{else}}
+                        <button class="primary ui button js-product-create" type="button">Ajouter un produit</button>
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
+            <div class="column">
+                {{#if editedProduct}}
+                <div class="ui segments">
+                    <div class="ui segment">
+                        <h1 class="ui header">Editer le produit</h1>
+                    </div>
+                    {{> productEdit (selectProduct editedProduct)}}
+                </div>
+                {{/if}}
+            </div>
+        </div>
+    </div>
+</template>
+
+<template name="productList">
+      <div class="item">
+        <div class="content">
+          <div class="header">
+              {{#if product.available}} 
+                <div class="ui green horizontal label left floated">En stock</div>
+              {{else}}
+                <div class="ui red horizontal label left floated">Rupture</div>
+              {{/if}}
+              <div class="ui circular label">{{product.index}}</div> {{product.reference}}  -  {{product.name}} 
+              <div class="ui tag small {{product.color}} label right floated">{{product.price}} €</div>
+          </div>
+        </div>
+      </div>
+</template>
+
+<template name="productEdit">
+    <div class="ui segment">
+        <form class="ui form js-product-edit">
+            <div class="field">
+                <label>_id</label>
+                <input name="_id" type="text" readonly="" value="{{product._id}}">
+            </div>
+            <div class="field">
+                <label>Index</label>
+                <input name="index" type="number" step="1" placeholder="Index du produit" value="{{product.index}}">
+            </div>
+            <div class="field">
+                <label>Image</label>
+                <input name="image" type="text" class="js-product-image" placeholder="Image du produit" value="{{product.image}}">
+                {{#if product.image}}
+                    <div align="center"><img class="preview" src="./assets/images/{{product.image}}" alt="Image" height="150px" width="150px"/></div>
+                {{/if}}
+            </div>
+            <div class="field">
+                <label>Référence</label>
+                <input name="reference" type="text" placeholder="Référence du produit" value="{{product.reference}}">
+            </div>
+            <div class="field">
+                <label>Nom</label>
+                <input name="name" type="text" placeholder="Nom du produit" value="{{product.name}}">
+            </div>
+            <div class="field">
+                <label>Prix</label>
+                <input name="price" type="number" step="0.1" placeholder="Prix du produit" value="{{product.price}}">
+            </div>
+            <div class="field">
+                <label>Description</label>
+                <textarea name="description" rows="3" placeholder="Description du produit">{{product.description}}</textarea>
+            </div>
+            <div class="field">
+                <label>Dimensions</label>
+                <input name="dimensions" type="text" placeholder="Dimensions du produit" value="{{product.dimensions}}">
+            </div>
+            <div class="field">
+                <div class="ui toggle checkbox js-product-available">
+                    <input name="available" type="checkbox" checked={{product.available}}>
+                    <label>Disponible</label>
+                </div>
+            </div>
+            <div class="field">
+                <label>Couleur</label>
+                <input name="color" type="text" placeholder="Couleur du produit" value="{{product.color}}">
+            </div>
+        </form>
+    </div>
+    <div class="ui segment right aligned">
+        <button class="positive ui button js-product-update" type="button">Enregistrer</button>
+        <button class="ui button js-product-cancel" type="button">Annuler</button>
+        <button class="negative ui button js-product-delete {{#if product.available}}hidden{{/if}}" type="button">Supprimer</button>
+    </div>
+</template>
+

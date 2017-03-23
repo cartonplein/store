@@ -1,0 +1,21 @@
+<template name="productCatalog">
+    <div class="card {{product.color}}">
+      <div class="content">
+          <h2 class="ui header centered align">
+              {{product.name}}
+          </h2>
+      </div>
+      <div class="image" style="background-color:#FFF">
+        <img src="/assets/images/{{product.image}}" class="content" style="max-height: 150px;width: auto; margin: auto">
+      </div>
+      <div class="content">
+        <div class="description">
+            <i class="info circle icon"></i>{{product.description}}
+        </div>
+      </div>
+      <div class="extra content">
+          <i class="move icon"></i>{{product.dimensions}}
+          <span class="ui {{product.color}} tag label large right floated">{{product.price}} €</span>
+      </div>
+    </div>
+</template>

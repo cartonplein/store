@@ -1,0 +1,24 @@
+<template name="commandForm">
+  <tr>
+    <td class="left aligned">
+      <div class="content">
+        <span class="ui header">{{product.reference}}</span> - {{product.name}}
+      </div>
+    </td>
+    <td class="right aligned">
+      <button class="ui basic pink circular mini icon button js-command-remove"><i class="icon minus"></i></button>
+    </td>
+    <td class="center aligned collapsing">
+      <div class="ui input"><input class="center aligned js-command-input" type="text" size="3" pattern="[0-9]*" value={{product.quantity}}></div>
+    </td>
+    <td class="left aligned">
+      <button class="ui basic pink circular mini icon button js-command-add"><i class="icon plus"></i></button>
+    </td>            
+    <td class="center aligned">{{product.price}} €</td>
+    <td class="right aligned">
+      <button class="ui basic circular mini icon negative button js-command-cancel">
+        <i class="icon close"></i>
+      </button>
+    </td>
+  </tr>
+</template>

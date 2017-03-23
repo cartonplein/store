@@ -1,0 +1,337 @@
+<template name="shippingAdmin">
+    {{> menuAdmin title="Gestion des livraisons"}}
+    <div class="ui main container">
+        <div class="ui grid">
+            <!-- SHIPPING MODES -->
+            <!-- SHIPPING MODES -->
+            <!-- SHIPPING MODES -->
+            <div class="ten wide column">                
+                <div class="ui segments">
+                    <div class="ui segment">
+                        <h1 class="ui header">Modes de livraison</h1>
+                    </div>
+                    <div class="ui segment">
+                        <div class="ui middle aligned divided selection list">
+                            {{#each mode in modes}}
+                              {{> modeList (selectMode mode)}}
+                            {{/each}}
+                        </div>
+                    </div>
+                    <div class="ui segment right aligned">
+                        {{#if editedMode}}
+                        <button class="ui button js-mode-close" type="button">Fermer</button>
+                        {{else}}
+                        <button class="primary ui button js-mode-create" type="button">Ajouter un mode</button>
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
+            <div class="six wide column">
+                {{#if editedMode}}
+                <div class="ui segments">
+                    <div class="ui segment">
+                        <h1 class="ui header">Modifier le mode</h1>
+                    </div>
+                    {{> modeEdit (selectMode editedMode)}}
+                </div>
+                {{/if}}
+            </div>
+            <!-- SHIPPING SLOTS       -->
+            <!-- SHIPPING SLOTS       -->
+            <!-- SHIPPING SLOTS       -->
+            <div class="ten wide column">                
+                <div class="ui segments">
+                    <div class="ui segment">
+                        <h1 class="ui header">Créneaux de livraisons</h1>
+                    </div>
+                    <div class="ui segment">
+                        <table class="ui very basic celled fluid table">
+                            <tbody>
+                                <tr>
+                                  <td></td>
+                                  {{#each slot in slots}}
+                                      {{>slotList (selectSlot slot)}}
+                                  {{/each}}
+                                </tr>
+                                {{#each day in week}}
+                                <tr>
+                                    <td class="ui small header">{{day.name}}</td>
+                                    {{#each slot in slots}}
+                                        {{>slotCell (toggleSlot slot day)}}
+                                    {{/each}}
+                                </tr>
+                                {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="ui segment right aligned">
+                        {{#if editedSlot}}
+                        <button class="ui button js-slot-close" type="button">Fermer</button>
+                        {{else}}
+                        <button class="primary ui button js-slot-create" type="button">Ajouter un créneau</button>
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
+            <div class="six wide column">
+                {{#if editedSlot}}
+                <div class="ui segments">
+                    <div class="ui segment">
+                        <h1 class="ui header">Modifier le créneau</h1>
+                    </div>
+                    {{> slotEdit (selectSlot editedSlot)}}
+                </div>
+                {{/if}}
+            </div>
+            <!-- CLOSED DAYS          -->
+            <!-- CLOSED DAYS          -->
+            <!-- CLOSED DAYS          -->
+            <div class="ten wide column">                
+                <div class="ui segments">
+                    <div class="ui segment">
+                        <h1 class="ui header">Jours de fermeture</h1>
+                    </div>
+                    <div class="ui segment">
+                        <div class="ui middle aligned divided selection list">
+                            {{#each day in days}}
+                              {{> dayList (selectDay day)}}
+                            {{/each}}
+                        </div>
+                    </div>
+                    <div class="ui segment right aligned">
+                        {{#if editedDay}}
+                        <button class="ui button js-day-close" type="button">Fermer</button>
+                        {{else}}
+                        <button class="primary ui button js-day-create" type="button">Ajouter un jour</button>
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
+            <div class="six wide column">
+                {{#if editedDay}}
+                <div class="ui segments">
+                    <div class="ui segment">
+                        <h1 class="ui header">Modifier le jour</h1>
+                    </div>
+                    {{> dayEdit (selectDay editedDay)}}
+                </div>
+                {{/if}}
+            </div>
+            <!-- SHIPPING PRICES      -->
+            <!-- SHIPPING PRICES      -->
+            <!-- SHIPPING PRICES      -->
+            <div class="ten wide column">                
+                <div class="ui segments">
+                    <div class="ui segment">
+                        <h1 class="ui header">Tarifs de livraison</h1>
+                    </div>
+                    <div class="ui segment">
+                        <div class="ui middle aligned divided selection list">
+                            {{#each zone in zones}}
+                              {{> zoneList (selectZone zone)}}
+                            {{/each}}
+                        </div>
+                    </div>
+                    <div class="ui segment right aligned">
+                        {{#if editedZone}}
+                        <button class="ui button js-zone-close" type="button">Fermer</button>
+                        {{else}}
+                        <button class="primary ui button js-zone-create" type="button">Ajouter un tarif</button>
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
+            <div class="six wide column">
+                {{#if editedZone}}
+                <div class="ui segments">
+                    <div class="ui segment">
+                        <h1 class="ui header">Modifier le tarif</h1>
+                    </div>
+                    {{> zoneEdit (selectZone editedZone)}}
+                </div>
+                {{/if}}
+            </div>
+        </div>
+    </div>
+</template>
+
+<template name="modeList">
+    <div class="item">
+        <div class="content">
+          <div class="header">
+            <div class="ui {{mode.color}} label" style="text-transform:capitalize;"><i class="{{mode.icon}} icon"></i>{{mode.tag}}</div>
+            {{mode.description}}
+          </div>
+        </div>
+    </div>
+</template>
+
+<template name="modeEdit">
+    <div class="ui segment">
+        <form class="ui form js-mode-edit">
+            <div class="field">
+                <label>_id</label>
+                <input name="_id" type="text" readonly="" value="{{mode._id}}">
+            </div>
+            <div class="field">
+                <label>Index</label>
+                <input name="index" type="number" value="{{mode.index}}">
+            </div>
+            <div class="field">
+                <label>Etiquette</label>
+                <input name="tag" type="text" placeholder="Etiquette du mode" value="{{mode.tag}}">
+            </div>
+            <div class="field">
+                <label>Nom</label>
+                <input name="name" type="text" placeholder="Nom du mode" value="{{mode.name}}">
+            </div>
+            <div class="field">
+                <label>Description</label>
+                <input name="description" type="text" placeholder="Description du mode" value="{{mode.description}}">
+            </div>
+            <div class="field">
+                <div class="ui toggle checkbox">
+                    <input name="delivered" type="checkbox" checked={{mode.delivered}}>
+                    <label>Livraison</label>
+                </div>
+            </div>
+            <div class="field">
+                <label>Couleur</label>
+                <input name="color" type="text" placeholder="couleur du mode" value="{{mode.color}}">
+            </div>
+            <div class="field">
+                <label>Icône</label>
+                <input name="icon" type="text" placeholder="Icône du mode" value="{{mode.icon}}">
+            </div>
+        </form>
+    </div>
+    <div class="ui segment right aligned">
+        <button class="positive ui button js-mode-update" type="button">Enregistrer</button>
+        <button class="ui button js-mode-close" type="button">Annuler</button>
+        <button class="negative ui button js-mode-delete" type="button">Supprimer</button>
+    </div>
+</template>
+
+<template name="slotList">
+    <td class="slot center aligned selectable">
+        <div class="ui circular label">{{slot.index}}</div> 
+        <div>{{slot.name}}</div>
+    </td>
+</template>
+
+<template name="slotCell">
+    <td class="center aligned">
+        <div class="ui toggle checkbox js-slot-open">
+            <input name="{{day.name}} - {{slot.name}}" type="checkbox" checked={{isOpen}}>
+        </div>
+    </td>
+</template>
+
+<template name="slotEdit">
+    <div class="ui segment">
+        <form class="ui form js-slot-edit">
+            <div class="field">
+                <label>_id</label>
+                <input name="_id" type="text" readonly="" value="{{slot._id}}">
+            </div>
+            <div class="field">
+                <label>Index</label>
+                <input name="index" type="number" step="1" placeholder="Index du créneau" value="{{slot.index}}">
+            </div>
+            <div class="field">
+                <label>Nom</label>
+                <input name="name" type="text" placeholder="Nom du créneau" value="{{slot.name}}">
+            </div>
+        </form>
+    </div>
+    <div class="ui segment right aligned">
+        <button class="positive ui button js-slot-update" type="button">Enregistrer</button>
+        <button class="ui button js-slot-close" type="button">Annuler</button>
+        <button class="negative ui button js-slot-delete" type="button">Supprimer</button>
+    </div>
+</template>
+
+<template name="dayList">
+    <div class="item">
+        <div class="content">
+          <div class="header">
+            <div class="ui red label">{{formatDate day.date}}</div>&nbsp;&nbsp;{{day.name}}
+          </div>
+        </div>
+    </div>
+</template>
+
+<template name="dayEdit">
+    <div class="ui segment">
+        <form class="ui form js-day-edit">
+            <div class="field">
+                <label>_id</label>
+                <input name="_id" type="text" readonly="" value="{{day._id}}">
+            </div>
+            <div class="field">
+                <label>Date</label>
+                <input name="date" type="date" placeholder="Date du jour" value="{{day.date}}">
+            </div>
+            <div class="field">
+                <label>Nom</label>
+                <input name="name" type="text" placeholder="Nom du jour" value="{{day.name}}">
+            </div>
+        </form>
+    </div>
+    <div class="ui segment right aligned">
+        <button class="positive ui button js-day-update" type="button">Enregistrer</button>
+        <button class="ui button js-day-close" type="button">Annuler</button>
+        <button class="negative ui button js-day-delete" type="button">Supprimer</button>
+    </div>
+</template>
+
+<template name="zoneList">
+    <div class="item">
+        <div class="content">
+          <div class="header">
+            <div class="ui label" style="text-transform:capitalize;">{{#if zone.assignment}}{{zone.assignment}}{{else}}Aucune{{/if}}</div> {{zone.zip}} <div class="ui right floated {{zone.color}} tag label">{{zone.price}} €</div>
+          </div>
+        </div>
+    </div>
+</template>
+
+<template name="zoneEdit">
+    <div class="ui segment">
+        <form class="ui form js-zone-edit">
+            <div class="field">
+                <label>_id</label>
+                <input name="_id" type="text" readonly="" value="{{zone._id}}">
+            </div>
+            <div class="field">
+                <label>Code postal</label>
+                <input name="zip" type="number" placeholder="Code postal" value="{{zone.zip}}">
+            </div>
+            <div class="field">
+                <label>Tarif de livraison</label>
+                <input name="price" type="number" placeholder="Prix" value="{{zone.price}}">
+            </div>
+            <div class="field">
+                <label>Affectation</label>
+                <div class="ui fluid selection dropdown">
+                    <input type="hidden" name="assignment" value="{{zone.assignment}}">
+                    <div class="text">{{zone.assignment}}</div>
+                    <i class="dropdown icon"></i>
+                    <div class="menu">
+                        <div class="item" data-value="">Aucune</div>
+                        <div class="item" data-value="nord">Nord</div>
+                        <div class="item" data-value="sud">Sud</div>
+                    </div>
+                </div>
+            </div>
+            <div class="field">
+                <label>Couleur</label>
+                <input name="color" type="text" placeholder="Couleur" value="{{zone.color}}">
+            </div>
+        </form>
+    </div>
+    <div class="ui segment right aligned">
+        <button class="positive ui button js-zone-update" type="button">Enregistrer</button>
+        <button class="ui button js-zone-close" type="button">Annuler</button>
+        <button class="negative ui button js-zone-delete" type="button">Supprimer</button>
+    </div>
+</template>

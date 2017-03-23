@@ -1,0 +1,96 @@
+<template name="shopHome">
+  {{> menuHome title="Boutique en ligne"}}
+  <div class="ui main" style="padding:1em">
+    <div class="ui stackable grid">
+        <div class="doubling ten wide column">
+          <!-- Catalog -->
+          <!-- Catalog -->
+          <!-- Catalog -->
+          <div class="ui link stackable three cards">
+            {{#each product in products}}
+              {{> productCatalog (editCommand product)}}
+            {{/each}}
+          </div>
+        </div>
+        <div class="doubling six wide column">
+          <!-- Command form -->
+          <!-- Command form -->
+          <!-- Command form -->
+          <div class="ui raised padded pink segment">
+            <h2 class="ui header horizontal divider">
+                <i class="cube icon"></i>Commande
+            </h2>
+            <table class="ui very basic compact table">
+              <tbody>
+                {{#each command in order.commands}}
+                  {{> commandForm (editCommand command)}}
+                {{/each}}
+              </tbody>
+              {{#if order.invoice.quantity}}
+              <tfoot class="ui header">
+                <tr>
+                  <th class="ui center aligned" colspan=3>
+                    <span class="ui header">Total pour {{order.invoice.quantity}} articles</span>
+                  </th>
+                  <th class="ui right aligned" colspan=3>
+                    <span class="ui tag big pink label">{{order.invoice.command}} €</span>
+                  </th>
+                </tr>
+              </tfoot>
+              {{else}}
+              <thead class="ui header">
+                <tr>
+                  <th class="ui center aligned" colspan=6>
+                    <div class="ui small header">Ajoutez des produits depuis le catalogue</div>
+                  </th>
+                </tr>
+              </thead>
+              {{/if}}
+            </table>
+          </div>
+          <!-- Succeed message -->
+          <!-- Succeed message -->
+          <!-- Succeed message -->
+          <div class="ui positive {{#if payment.succeed}}visible{{else}}hidden{{/if}} big message">
+            <i class="close icon"></i>
+            <div class="header">
+              Paiement réussi :)
+            </div>
+            <p>Merci de votre commande. Un mél de confirmation vient de vous être envoyé.</p>
+          </div>
+          <!-- Shipping form -->
+          <!-- Shipping form -->
+          <!-- Shipping form -->
+          <div class="ui raised padded yellow segment 
+                      {{#if order.invoice.quantity}}visible{{else}}hidden{{/if}}">
+            <h2 class="ui header horizontal divider">
+              <i class="bicycle icon"></i>Livraison
+            </h2>
+            <table class="ui very basic compact table">
+              {{> shippingForm (editShipping order.shipping order.invoice)}}
+            </table>
+          </div>
+          <!-- Error message -->
+          <!-- Error message -->
+          <!-- Error message -->
+          <div class="ui negative {{#if payment.error}}visible{{else}}hidden{{/if}} big message">
+            <i class="close icon"></i>
+            <div class="header">
+              Erreur lors du paiement :(
+            </div>
+            <p>Veuillez corriger les informations de paiement pour valider votre commande.</p>
+          </div>
+          <!-- Paiement form -->
+          <!-- Paiement form -->
+          <!-- Paiement form -->
+          <div class="ui raised padded teal segment
+                      {{#if order.invoice.quantity}}
+                        {{#if total}}visible
+                        {{else}}hidden{{/if}}
+                      {{else}}hidden{{/if}}">
+            {{> paymentForm (editOrder total)}}
+          </div>
+        </div>
+    </div>
+  </div>
+</template>
