@@ -72,7 +72,7 @@ Template.shippingForm.helpers({
             if (!bookedSlots[date][time]) {bookedSlots[date][time] = 0}
             bookedSlots[date][time]++;
         });
-        console.log('bookedSlots:', nextDay, bookedSlots);
+        //console.log('bookedSlots:', nextDay, bookedSlots);
         
         // Open slots (3)
         const slots = Slots.find({}, { sort: { index: 1 } });
@@ -109,7 +109,7 @@ Template.shippingForm.helpers({
                     // Free slots
                     // Free slots
                     let date = shippingDate.format('DD/MM/YYYY');
-                    console.log('openSlots:', date, openSlots, bookedSlots[date]);
+                    //console.log('openSlots:', date, openSlots, bookedSlots[date]);
                     var freeSlots = [];
                     if (bookedSlots[date]) {
                         // Removing full booking slots

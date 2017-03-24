@@ -66,10 +66,8 @@
             </div>
             <div class="field">
                 <label>Image</label>
-                <input name="image" type="text" class="js-product-image" placeholder="Image du produit" value="{{product.image}}">
-                {{#if product.image}}
-                    <div align="center"><img class="preview" src="./assets/images/{{product.image}}" alt="Image" height="150px" width="150px"/></div>
-                {{/if}}
+                <div align="center"><img class="js-product-image" src="{{image}}" alt="Cliquez pour télécharger une image" height="150px" width="150px"/></div>
+                <input name="image" type="text" placeholder="Lien sur l'image" value="{{image}}"/>
             </div>
             <div class="field">
                 <label>Référence</label>

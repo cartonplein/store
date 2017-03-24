@@ -3,7 +3,7 @@ import { BlazeLayout } from 'meteor/kadira:blaze-layout';
 
 FlowRouter.route('/', {
   action: function() {
-    BlazeLayout.render("mainLayout", {content: "shopHome"});
+    BlazeLayout.render("mainLayout", {content: "storeHome"});
   }
 });
 
@@ -21,6 +21,6 @@ FlowRouter.route('/shipping', {
 
 FlowRouter.route('/backoffice', {
   action: function() {
-    BlazeLayout.render("mainLayout", {content: "orderAdmin"});
+    BlazeLayout.render("mainLayout", {content: "storeAdmin"});
   }
 });

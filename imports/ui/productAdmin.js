@@ -1,7 +1,8 @@
 import { Template } from 'meteor/templating';
 import { ReactiveDict } from 'meteor/reactive-dict';
 import { Products } from '../api/products.js';
-
+import filestack from 'filestack-js';
+ 
 import './productAdmin.html';
 import './menuAdmin.html';
 
@@ -92,12 +93,40 @@ Template.productList.events({
   ProductEdit
 */
 
+Template.productEdit.onCreated(function() {
+  this.state = new ReactiveDict();
+  this.state.setDefault({
+    image: null,
+  });
+});
+
 Template.productEdit.onRendered(function() {
   // Enable toggle action
   $('.ui.checkbox').checkbox();
 });
 
+Template.productEdit.helpers({
+  image() {
+    const instance = Template.instance();
+    if (instance.state.get("image")) 
+      { return instance.state.get("image") } 
+    else {
+      return this.product.image;
+    }
+  }
+});
+
 Template.productEdit.events({
+  'click .js-product-image'(event, instance) {
+    var client = filestack.init('AQxsBa1C5Soey0Npzcp7Sz');
+    client.pick({
+    }).then(function(result) {
+        //console.log(JSON.stringify(result.filesUploaded));
+        console.log('Upload file:', result.filesUploaded[0].url);
+        instance.state.set('image', result.filesUploaded[0].url);
+    });
+  },
+  
   'click .js-product-update'(event, instance) {
     const form = instance.$('.js-product-edit');
     console.log(instance.$('input[name=name]').val());

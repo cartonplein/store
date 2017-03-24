@@ -4,16 +4,16 @@ import { Orders } from '../api/orders.js';
 import { moment } from 'meteor/momentjs:moment';
 import { Slots, Days, Zones } from '../api/shipping.js';
 
-import './orderAdmin.html';
+import './storeAdmin.html';
 import './menuAdmin.html';
 
 /*
-  orderAdmin
-  orderAdmin
-  orderAdmin
+  storeAdmin
+  storeAdmin
+  storeAdmin
 */
 
-Template.orderAdmin.onCreated(function() {
+Template.storeAdmin.onCreated(function() {
   this.state = new ReactiveDict();
   this.state.setDefault({
     selectedOrder: null,
@@ -27,14 +27,14 @@ Template.orderAdmin.onCreated(function() {
   };
 });
 
-Template.orderAdmin.onRendered(function() {
+Template.storeAdmin.onRendered(function() {
   // Enable toggle action
   $('.ui.dropdown').dropdown();
   $('.ui.sticky').sticky({context: '#context'});
   // $('.ui.sticky').sticky('refresh');
 });
 
-Template.orderAdmin.helpers({
+Template.storeAdmin.helpers({
   orders() {
     return Orders.find({}, { sort: { 'shipping.date':1, 'shipping.time':1} });
   },
@@ -163,7 +163,7 @@ Template.orderAdmin.helpers({
   }
 });
 
-Template.orderAdmin.events({
+Template.storeAdmin.events({
   'click .js-order-create'(event, instance) {
 
     // Add order into the collection

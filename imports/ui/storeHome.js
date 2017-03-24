@@ -1,21 +1,23 @@
 import { Template } from 'meteor/templating';
 import { ReactiveDict } from 'meteor/reactive-dict';
 import { Products } from '../api/products.js';
-import { Zones } from '../api/shipping.js';
+import { Zones, Modes } from '../api/shipping.js';
 import { Orders } from '../api/orders.js';
+import { moment } from 'meteor/momentjs:moment';
 
 import './productCatalog.js';
 import './commandForm.js';
 import './shippingForm.js';
 import './paymentForm.js';
 
-import './shopHome.html';
+import './storeHome.html';
 import './menuAdmin.html';
 
-Template.shopHome.onCreated(function() {
+Template.storeHome.onCreated(function() {
   Meteor.subscribe('products');
   Meteor.subscribe('zones');
   Meteor.subscribe('orders');
+  Meteor.subscribe('modes');
   
   this.order = new ReactiveDict();
   this.order.setDefault({
@@ -68,7 +70,7 @@ Template.shopHome.onCreated(function() {
   };
 });
 
-Template.shopHome.onRendered(function() {
+Template.storeHome.onRendered(function() {
   // Enable toggle action
   $('.ui.checkbox').checkbox();
   $('.ui.dropdown').dropdown();
@@ -79,16 +81,31 @@ Template.shopHome.onRendered(function() {
   $('.ui.sticky').sticky({context: '#context'});
   
   var email = {
-    from: 'bonjour@cartonplein.org',
-    to: 'do@cartonplein.org',
+    from: 'Carton plein <bonjour@cartonplein.org>',
+    to: 'Do Huynh <do@cartonplein.org>',
     subject: 'Carton plein : confirmation de commande',
     text: 'Votre commande a bien été reçue',
     html: "",
   };
-  Meteor.call('sendEmail', email);
+  var data = {
+    title: 'Reçu de commande',
+    date : moment().format('DD MMMM YYYY'),
+    client: {firstname : 'Do', lastname : 'Huynh', email : 'do@cartonplein.org', phone:'06 72 14 36 57'},
+    products : [{reference:'S', name: 'Carton standard', price:1.0, quantity: 30}, {reference:'L', name: 'Carton livre', price:0.8, quantity: 10}],
+    shipping: {
+      mode: ('nord' == 'velo') ? 'Livraison' : 'Retrait', 
+      date:'28 mars 2017', 
+      time: '10h00',
+      address : '34 boulevard Ornano' + ' ' + '75018' + ' ' + 'Paris', 
+      price: (false) ? 0 : 8},
+    total: 40,
+  };
+  var template = 'email-billing.html';
+  // console.log("Send email: ", email, data, template);
+  //Meteor.call('sendEmail', email, data, template);
 });
 
-Template.shopHome.helpers({
+Template.storeHome.helpers({
   products() {
     return Products.find({ available: true }, { sort: { index: 1 } });
   },
@@ -141,7 +158,7 @@ Template.shopHome.helpers({
       shipping['free'] = instance.freeShipping();
       instance.order.set('shipping', shipping);
       
-      console.log("updateShipping: ", shipping); 
+      // console.log("updateShipping: ", shipping); 
     };
     
     function updateInvoice (quantity, price) {
@@ -154,7 +171,7 @@ Template.shopHome.helpers({
       invoice['command'] = command.toFixed(2);
       
       instance.order.set('invoice', invoice);
-      console.log("Update invoice:", invoice)
+      //console.log("Update invoice:", invoice)
       //console.log("Update invoice quantity: ", invoice['quantity']);
       //console.log("Update invoice command: ", invoice['command'],' €'); 
     };
@@ -183,7 +200,7 @@ Template.shopHome.helpers({
           commands[index] = line;
         }
         instance.order.set("commands", commands);
-        console.log("Update product to commands: ", instance.order.get('commands'));
+        // console.log("Update product to commands: ", instance.order.get('commands'));
         
         updateInvoice (step, parseFloat(line['price']) * step);
         updateShipping();
@@ -205,14 +222,14 @@ Template.shopHome.helpers({
       else {
         // Locally delivered
         if (shipping['mode'] !== 'velo') {
-          console.log("retrait sur place");
+          //console.log("retrait sur place");
           invoice['shipping'] = 0;
         } else {
           // Bicycle delivered
           if ((shipping['address'].length > 0) 
             && (shipping['zip'].length > 0) 
             && (shipping['city'].length > 0)) {
-              console.log("livraison à vélo");
+              //console.log("livraison à vélo");
               const zone = Zones.find({zip : shipping['zip']}).fetch();
               var price = null;
               if (zone[0]) {price = zone[0].price}
@@ -223,7 +240,7 @@ Template.shopHome.helpers({
       }; 
       
       instance.order.set('invoice', invoice);
-      console.log("updateInvoice: ", invoice); 
+      //console.log("updateInvoice: ", invoice); 
     };
     
     return {
@@ -234,7 +251,7 @@ Template.shopHome.helpers({
         shipping[field] = value;
         updateInvoice(shipping);
         instance.order.set('shipping', shipping);
-        console.log("onChange shipping:", shipping);
+        //console.log("onChange shipping:", shipping);
       }
     };
   },
@@ -252,7 +269,7 @@ Template.shopHome.helpers({
           charge : charge,
           workflow : {paid: (mode == 'LIVE'), prepared:false, delivered:false, canceled:false}
         };
-        console.log("onAdd order:", charge, client, instance.order.keys);
+        //console.log("onAdd order:", charge, client, instance.order.keys);
         // Add product into the collection
         Meteor.call('Orders.create', order,
           function(error, result){
@@ -261,19 +278,36 @@ Template.shopHome.helpers({
                 console.log("Adding new order: ", result);
                 // In your client code: asynchronously send an email
                 console.log("Send email to: ", order.client.email);
+
+                const mode = Modes.findOne({ tag:order.shipping.mode });
                 var email = {
-                  from: 'bonjour@cartonplein.org',
-                  to: order.client.email,
+                  from: 'Carton plein <bonjour@cartonplein.org>',
+                  to: order.client.firstname + ' ' + order.client.lastname + '<' + order.client.email + '>',
                   subject: 'Carton plein : confirmation de commande',
                   text: 'Votre commande a bien été reçue',
                   html: "",
                 };
-                Meteor.call('sendEmail', email);
+                var data = {
+                  title: 'Reçu de commande',
+                  date : moment().format('DD MMMM YYYY'),
+                  client: order.client,
+                  products : order.commands,
+                  shipping: {
+                    mode: mode.name, 
+                    date:order.shipping.date, 
+                    time: order.shipping.time,
+                    address : (mode.tag == 'velo') ? 
+                      order.shipping.address + ' ' + order.shipping.zip + ' ' + order.shipping.city : mode.address, 
+                    price: (order.shipping.free) ? 0 : order.invoice.shipping},
+                  total: total,
+                };
+                var template = 'email-billing.html';
+                Meteor.call('sendEmail', email, data, template);
               }
         });
       },
       onSucceed() {
-        console.log("onSucceed order");
+        //console.log("onSucceed order");
         instance.payment.set('succeed', true);
         instance.payment.set('error', false);
         instance.reset();

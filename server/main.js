@@ -33,33 +33,24 @@ Meteor.methods({
             });
     },
     
-    sendEmail: function (email) {
+    sendEmail: function (email, data, template) {
         check([email.from, email.to, email.subject, email.text], [String]);
         // Let other method calls from the same client start running,
         // without waiting for the email sending to complete.
+        //console.log("Send email: ", email, data);
+        SSR.compileTemplate('htmlEmail', Assets.getText(template));
         
-        SSR.compileTemplate('htmlEmail', Assets.getText('email-stripe.html'));
-
-        var emailData = {
-          amount: "30.00",
-          name: "Do Huynh",
-          email: email.to,
-          subject: email.subject,
-        };
-        
-        /*
-        Email.send({
-          to: "to.address@email.com",
-          from: "from.address@email.com",
-          subject: "Example Email",
-          html: SSR.render('htmlEmail', emailData),
+        Template.htmlEmail.helpers({
+          subtotal(a, b) {
+            console.log('subtotal: ', a, b);
+            return (parseFloat(a) * parseFloat(b));
+          }
         });
-        */
-        
-        email.html = SSR.render('htmlEmail', emailData);
+
+        email.html = SSR.render('htmlEmail', data);
 
         mailgun.messages().send(email, function (error, body) {
-          console.log('SEND email:', email.from, email.to, body);
+          console.log('SEND email to:', email.to);
         });
     }
 })

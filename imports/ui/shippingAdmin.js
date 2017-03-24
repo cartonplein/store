@@ -470,6 +470,7 @@ Template.modeEdit.events({
       index : instance.$('input[name=index]').val(),
       name : instance.$('input[name=name]').val(),
       description : instance.$('input[name=description]').val(),
+      address : instance.$('input[name=address]').val(),
       color : instance.$('input[name=color]').val(),
       icon : instance.$('input[name=icon]').val(),
       delivered : instance.$('input[name=delivered]').is(':checked'),
