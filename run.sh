@@ -1,0 +1,1 @@
+MONGO_URL=mongodb://cartonplein:papiervide@ds135830.mlab.com:35830/cartonplein_dev meteor run -p 8080
