@@ -1,1 +1,6 @@
 node_modules/
+settings.dev.json
+settings.stag.json
+settings.prod.json
+settings.local.json
+
