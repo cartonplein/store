@@ -10,6 +10,8 @@
     "bcrypt": "^1.0.2",
     "filestack-js": "^0.4.1",
     "mailgun-js": "^0.8.2",
+    "mapbox": "^1.0.0-beta6",
+    "mapbox-gl": "^0.34.0",
     "meteor-node-stubs": "~0.2.0",
     "stripe": "^4.15.0"
   },

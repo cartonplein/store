@@ -261,13 +261,23 @@ Template.storeHome.helpers({
     return {
       total,
       onAdd(client, mode, charge) {
+        // Define assignment
+        var assignment = '';
+        const shipping = instance.order.get('shipping');
+        if (shipping.mode == 'velo') {
+          var zone = Zones.findOne({'zip': shipping.zip});
+          // console.log('find zone: ', zone);
+          assignment = zone.assignment ? zone.assignment : '';
+        } else {
+          assignment = shipping.mode
+        }
         const order = {
           commands: instance.order.get('commands'),
           client: client,
           shipping: instance.order.get('shipping'),
           invoice: instance.order.get('invoice'),
           charge : charge,
-          workflow : {paid: (mode == 'LIVE'), prepared:false, delivered:false, canceled:false}
+          workflow : {paid: (mode == 'LIVE'), prepared:false, delivered:false, canceled:false, assignment:assignment, comments:""}
         };
         //console.log("onAdd order:", charge, client, instance.order.keys);
         // Add product into the collection

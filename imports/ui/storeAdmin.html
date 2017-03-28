@@ -1,20 +1,32 @@
 <template name="storeAdmin">
     {{> menuAdmin title="Gestion des commandes"}}
     <div class="ui main" style="padding:1em">
+        <div class="ui secondary menu">
+            <a class="item pink" data-tab="unpaid">A payer ({{count (filter "unpaid")}})</a>
+            <a class="item active yellow" data-tab="unprepared">A préparer ({{count (filter "unprepared")}})</a>
+            <a class="item teal" data-tab="undelivered">A livrer ({{count (filter "undelivered")}})</a>
+            <a class="item green" data-tab="done">Terminée ({{count (filter "done")}})</a>
+            <a class="item black" data-tab="cancel">Annulée ({{count (filter "cancel")}})</a>
+            <a class="item grey" data-tab="all">Tous ({{count (filter "all")}})</a>
+        </div>
         <div class="ui stackable two column grid">
             <div class="column">
-                {{#each date in dates}}
-                <div class="ui segments">
-                    <div class="ui segment">
-                        <div class="ui middle aligned divided selection list">
-                                <h2 class="ui header css-date">
-                                    {{formatDate date}}
-                                </h2>
-                                {{#each order in (orders date)}}
-                                    {{> orderList (selectOrder order)}}
-                                {{/each}}
+                {{#each state in states}}
+                <div class="ui {{#if (equals @index 1)}}active{{/if}} tab" data-tab="{{state}}">
+                    {{#each date in (dates (filter state))}}
+                    <div class="ui segments">
+                        <div class="ui segment">
+                            <div class="ui middle aligned divided selection list">
+                                    <h2 class="ui header css-date">
+                                        {{formatDate date}}
+                                    </h2>
+                                    {{#each order in (orders (filter state) date)}}
+                                        {{> orderList (selectOrder order)}}
+                                    {{/each}}
+                            </div>
                         </div>
                     </div>
+                    {{/each}}
                 </div>
                 {{/each}}
             </div>
@@ -54,6 +66,9 @@
                 {{order.shipping.address}} {{order.shipping.zip}} {{order.shipping.city}}
             </div>
             {{/if}}
+            <div class="description">
+                {{order.workflow.comments}}
+            </div>
         </div>
         {{/if}}
     </div>
@@ -61,6 +76,9 @@
 
 <template name="orderEdit">
     <div class="ui sticky segments">
+        <div class="ui header" id="map" style='width: 100%; height: 300px; margin: 0'>
+            {{> orderMap origin=shippingOrigin destination=shippingDestination}}
+        </div>
         <div class="ui segment large form js-order-edit">
             <h3 class="ui header">
                 <i class="cube icon"></i>Commande
@@ -151,23 +169,23 @@
             </div>
             {{/if}}
         </div>
-        <div class="ui segment large form js-order-workflow">
+        <div class="ui segment large form">
             <h3 class="ui header">
                     <i class="tasks icon"></i>Suivi
             </h3>
             <div class="four fields">
                 <div class="field">
-                    <a class="ui fluid large {{#if workflow.paid}}pink{{/if}} label" name="paid" style="text-align:center;">
+                    <a class="ui fluid large {{#if workflow.paid}}pink{{/if}} label js-order-workflow" name="paid" style="text-align:center;">
                         <i class="user icon"></i>Payée
                     </a>
                 </div>
                 <div class="field">
-                    <a class="ui fluid large {{#if workflow.prepared}}yellow{{/if}} label" name="prepared" style="text-align:center;">
+                    <a class="ui fluid large {{#if workflow.prepared}}yellow{{/if}} label js-order-workflow" name="prepared" style="text-align:center;">
                         <i class="cube icon"></i>Préparée
                     </a>
                 </div>
                 <div class="field">
-                    <a class="ui fluid large {{#if workflow.delivered}}teal{{/if}} label" name="delivered" style="text-align:center;">
+                    <a class="ui fluid large {{#if workflow.delivered}}teal{{/if}} label js-order-workflow" name="delivered" style="text-align:center;">
                         {{#if (bicycle order)}}
                         <i class="bicycle icon"></i>Livrée
                         {{else}}
@@ -176,7 +194,7 @@
                     </a>
                 </div>
                 <div class="field">
-                    <a class="ui fluid large {{#if workflow.canceled}}black{{/if}} label" name="canceled" style="text-align:center;">
+                    <a class="ui fluid large {{#if workflow.canceled}}black{{/if}} label js-order-workflow" name="canceled" style="text-align:center;">
                         <i class="cancel icon"></i>Annulée
                     </a>
                 </div>
@@ -189,7 +207,7 @@
                       <div class="text">{{order.workflow.assignment}}</div>
                       <i class="dropdown icon"></i>
                       <div class="menu">
-                        <div class="item" data-value="aucune" style="text-transform:capitalize;">aucune</div>
+                        <div class="item" data-value="" style="text-transform:capitalize;">aucune</div>
                         <div class="item" data-value="nord" style="text-transform:capitalize;">nord</div>
                         <div class="item" data-value="sud" style="text-transform:capitalize;">sud</div>
                       </div>
@@ -218,9 +236,25 @@
         </div>
         <div class="ui segment right aligned">
             <button class="positive ui button js-order-update" type="button">Enregistrer</button>
-            <button class="ui button js-order-cancel" type="button">Annuler</button>
+            <button class="ui button js-order-close" type="button">Fermer</button>
             <button class="negative ui button js-order-delete {{#unless workflow.canceled}}hidden{{/unless}}" type="button">Supprimer</button>
         </div>
     </div>
+</template>
+
+<template name="orderMap">
+    {{#if origin}}
+        <iframe width="100%" height="300px" frameborder="0" style="border:0"
+        src="https://www.google.com/maps/embed/v1/directions?key=AIzaSyAdwtMs_PNCnHSNlz5L3GwULQdcsycg7vs
+              &origin={{origin}}
+              &destination={{destination}}
+              &mode=bicycling" allowfullscreen>
+        </iframe>
+    {{else}}
+        <iframe width="100%" height="300px" frameborder="0" style="border:0"
+            src="https://www.google.com/maps/embed/v1/place?q={{destination}}&key=AIzaSyAdwtMs_PNCnHSNlz5L3GwULQdcsycg7vs" 
+            allowfullscreen>
+        </iframe>
+    {{/if}}
 </template>
 

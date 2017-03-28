@@ -2,7 +2,7 @@ import { Template } from 'meteor/templating';
 import { ReactiveDict } from 'meteor/reactive-dict';
 import { Orders } from '../api/orders.js';
 import { moment } from 'meteor/momentjs:moment';
-import { Slots, Days, Zones } from '../api/shipping.js';
+import { Slots, Days, Zones, Modes } from '../api/shipping.js';
 
 import './storeAdmin.html';
 import './menuAdmin.html';
@@ -31,6 +31,7 @@ Template.storeAdmin.onRendered(function() {
   // Enable toggle action
   $('.ui.dropdown').dropdown();
   $('.ui.sticky').sticky({context: '#context'});
+  $('.menu .item').tab();
   // $('.ui.sticky').sticky('refresh');
 });
 
@@ -39,12 +40,44 @@ Template.storeAdmin.helpers({
     return Orders.find({}, { sort: { 'shipping.date':1, 'shipping.time':1} });
   },
   
-  orders(date) {
-    return Orders.find({'shipping.date': date}, {sort: {'shipping.time':1}});
+  count(state) {
+    return Orders.find(state).fetch().length;
   },
-
-  dates() {
-    const orders = Orders.find({}, {sort: { 'shipping.date':1, 'shipping.time':1}}, { fields: {'shipping.date':1}}).fetch();
+  
+  orders(state, date) {
+    var filter = Object.assign({}, state, {'shipping.date': date});
+    return Orders.find(filter, {sort: {'shipping.time':1, '_id':1}});
+  },
+  
+  states() {
+    return ['unpaid', 'unprepared', 'undelivered', 'done', 'cancel', 'all'];
+  },
+  
+  filter(state) {
+    var filter = {};
+    if (state == 'unpaid') {
+      filter = {'workflow.paid': false, 'workflow.canceled': false}
+    }
+    if (state == 'unprepared') {
+      filter = {'workflow.prepared': false, 'workflow.canceled': false}
+    }
+    if (state == 'undelivered') {
+      filter = {'workflow.delivered': false, 'workflow.canceled': false}
+    }
+    if (state == 'done') {
+      filter = {'workflow.paid': true, 'workflow.prepared': true, 'workflow.delivered': true, 'workflow.canceled': false}
+    }
+    if (state == 'cancel') {
+      filter = {'workflow.canceled': true}
+    }
+    if (state == 'all') {
+      filter = {}
+    }
+    return filter;
+  },
+  
+  dates(filter) {
+    const orders = Orders.find(filter, {sort: { 'shipping.date':1, 'shipping.time':1}}, { fields: {'shipping.date':1}}).fetch();
     var dates = [];
     for (let i=0; i < orders.length; i++) {
       let date = orders[i].shipping.date;
@@ -121,19 +154,19 @@ Template.storeAdmin.helpers({
         return instance.state.get("selectedOrder").workflow;
       },
       assignment(order) {
-        var assignment = order.workflow.assignment;
-        if (!assignment) { 
+        var workflow = order.workflow;
+        var assignment = '';
+        if (!workflow['assignment']) { 
           // assignement is null
-          if (order.shipping.mode == 'nord') { assignment = "nord" };
-          if (order.shipping.mode == 'sud') { assignment = "sud" };
           if (order.shipping.mode == 'velo') {
             var zone = Zones.findOne({'zip': order.shipping.zip});
             // console.log('find zone: ', zone);
-            assignment = zone.assignment ? zone.assignment : 'aucune';
+            assignment = zone ? zone.assignment : order.shipping.zip;
+          } else {
+            assignment = order.shipping.mode
           }
-        }
-        if (assignment == 'aucune') {
-            assignment = (order.shipping.mode == 'velo') ? order.shipping.zip : order.shipping.mode;
+        } else {
+          assignment = workflow.assignment;
         }
         //console.log('assignment:', assignment);
         return assignment
@@ -208,6 +241,7 @@ Template.orderList.events({
 Template.orderEdit.onCreated(function() {
   Meteor.subscribe('slots');
   Meteor.subscribe('days');
+  Meteor.subscribe('modes');
 
   this.state = new ReactiveDict();
   this.state.setDefault({
@@ -289,8 +323,28 @@ Template.orderEdit.helpers({
   shippingSlots() {
       const instance = Template.instance();
       const selectedDate = this.order.shipping.date;
-      console.log("Updated date slots: ", selectedDate)
+      // console.log("Updated date slots: ", selectedDate)
       return(instance.state.get('slots')[selectedDate])
+  },
+  
+  shippingOrigin() {
+    if (!this.order.workflow.assignment) {
+      return null;
+    } else {
+      const mode = Modes.findOne({ tag:this.order.workflow.assignment });
+      return (mode ? mode.address : null);
+    }
+  },
+  
+  shippingDestination() {
+      const mode = Modes.findOne({ tag:this.order.shipping.mode });
+      if (mode) {
+        const address = (mode.tag == 'velo') ? 
+                  this.order.shipping.address + ' ' + this.order.shipping.zip + ' ' + this.order.shipping.city : mode.address
+        return address;
+      } else {
+        return null;
+      }
   },
 });
 
@@ -334,7 +388,7 @@ Template.orderEdit.events({
     this.onClose();
   },
   
-  'click .js-order-cancel'() {
+  'click .js-order-close'() {
     // Cancel editing order
     this.onClose();
   },
@@ -347,4 +401,76 @@ Template.orderEdit.events({
     // Leaving editing order
     this.onClose();
   },
+});
+
+/*
+  orderMap
+  orderMap
+  orderMap
+*/
+Template.orderMap.onCreated(function() { 
+  /*
+  const mapboxToken = 'pk.eyJ1IjoiY2FydG9ucGxlaW4iLCJhIjoiY2owczhlcmFzMDAyYjMybXNpNDIxajJ2aiJ9.xWRJAjqUVmCjDtNSHmWg6g'
+  var MapboxClient = require('mapbox');
+  this.geocoder = new MapboxClient(mapboxToken);
+  var mapboxgl = require('mapbox-gl/dist/mapbox-gl.js');
+  mapboxgl.accessToken = mapboxToken;
+  this.map = function (options) {return new mapboxgl.Map(options)};
+  */
+});
+
+Template.orderMap.onRendered(function() {
+  // Enable mapbox
+  /*
+  const options = {
+      container: 'mapbox',
+      style: 'mapbox://styles/mapbox/streets-v9',
+      center: [0, 0],
+      zoom: 13
+  };
+  var map = this.map(options);
+  console.log("Init map:", map);
+  
+  map(options).on('load', function() {
+      map.setLayoutProperty('country-label-lg', 'text-field', '{name_fr}');
+      // Add a source and layer displaying a point which will be animated in a circle.
+      map.addSource('point', {
+          "type": "geojson",
+          "data": {},
+      });
+    
+      map.addLayer({
+          "id": "point",
+          "source": "point",
+          "type": "circle",
+          "paint": {
+              "circle-radius": 10,
+              "circle-color": "#007cbf"
+          }
+      });
+  });
+  */
+});
+Template.orderMap.helpers({
+  /*
+  geocode(address, map) {
+      const instance = Template.instance();
+      console.log("Geocoding:", address);
+      
+      instance.geocoder.geocodeForward(address, function(err, res) {
+        console.log('location:', res.features[0]);
+        var location = {
+          "type": "Point",
+          "coordinates": res.features[0].center
+        };
+        map.getSource('point').setData(location);
+        map.jumpTo({ 'center': location.coordinates, 'zoom': 14 });
+      });
+  },
+  
+  map() {
+      const instance = Template.instance();
+      return instance.map;
+  }
+  */
 });
