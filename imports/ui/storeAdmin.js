@@ -160,14 +160,14 @@ Template.storeAdmin.helpers({
           // assignment is empty
           if (order.shipping.mode == 'velo') {
             var zone = Zones.findOne({'zip': order.shipping.zip});
-            console.log('Deliver: ', order.shipping.mode, zone);
+            //console.log('Deliver: ', order.shipping.mode, zone);
             assignment = zone ? zone.assignment : '';
           } else {
-            console.log('On place: ', order.shipping.mode);
+            //console.log('On place: ', order.shipping.mode);
             assignment = order.shipping.mode
           }
         } else {
-          console.log('Assignement: ', workflow.assignment);
+          //console.log('Assignement: ', workflow.assignment);
           assignment = workflow.assignment;
         }
         //console.log('assignment:', assignment);
