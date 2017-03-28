@@ -156,20 +156,22 @@ Template.storeAdmin.helpers({
       assignment(order) {
         var workflow = order.workflow;
         var assignment = '';
-        if (!workflow['assignment']) { 
-          // assignement is null
+        if (workflow['assignment'] == '') { 
+          // assignment is empty
           if (order.shipping.mode == 'velo') {
             var zone = Zones.findOne({'zip': order.shipping.zip});
-            // console.log('find zone: ', zone);
-            assignment = zone ? zone.assignment : order.shipping.zip;
+            console.log('Deliver: ', order.shipping.mode, zone);
+            assignment = zone ? zone.assignment : '';
           } else {
+            console.log('On place: ', order.shipping.mode);
             assignment = order.shipping.mode
           }
         } else {
+          console.log('Assignement: ', workflow.assignment);
           assignment = workflow.assignment;
         }
         //console.log('assignment:', assignment);
-        return assignment
+        return (assignment ? assignment : order.shipping.zip);
       },
       onSelect(order) {
         instance.state.set('selectedOrder', order);

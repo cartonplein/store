@@ -79,30 +79,6 @@ Template.storeHome.onRendered(function() {
     $(this).closest('.message').transition('fade');
   });
   $('.ui.sticky').sticky({context: '#context'});
-  
-  var email = {
-    from: 'Carton plein <bonjour@cartonplein.org>',
-    to: 'Do Huynh <do@cartonplein.org>',
-    subject: 'Carton plein : confirmation de commande',
-    text: 'Votre commande a bien été reçue',
-    html: "",
-  };
-  var data = {
-    title: 'Reçu de commande',
-    date : moment().format('DD MMMM YYYY'),
-    client: {firstname : 'Do', lastname : 'Huynh', email : 'do@cartonplein.org', phone:'06 72 14 36 57'},
-    products : [{reference:'S', name: 'Carton standard', price:1.0, quantity: 30}, {reference:'L', name: 'Carton livre', price:0.8, quantity: 10}],
-    shipping: {
-      mode: ('nord' == 'velo') ? 'Livraison' : 'Retrait', 
-      date:'28 mars 2017', 
-      time: '10h00',
-      address : '34 boulevard Ornano' + ' ' + '75018' + ' ' + 'Paris', 
-      price: (false) ? 0 : 8},
-    total: 40,
-  };
-  var template = 'email-billing.html';
-  // console.log("Send email: ", email, data, template);
-  //Meteor.call('sendEmail', email, data, template);
 });
 
 Template.storeHome.helpers({
