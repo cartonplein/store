@@ -49,14 +49,14 @@
                             <tbody>
                                 <tr>
                                   <td></td>
-                                  {{#each slot in slots}}
+                                  {{#each slot in (slots 'deliver')}}
                                       {{>slotList (selectSlot slot)}}
                                   {{/each}}
                                 </tr>
                                 {{#each day in week}}
                                 <tr>
                                     <td class="ui small header">{{day.name}}</td>
-                                    {{#each slot in slots}}
+                                    {{#each slot in (slots 'deliver')}}
                                         {{>slotCell (toggleSlot slot day)}}
                                     {{/each}}
                                 </tr>
@@ -65,21 +65,68 @@
                         </table>
                     </div>
                     <div class="ui segment right aligned">
-                        {{#if editedSlot}}
-                        <button class="ui button js-slot-close" type="button">Fermer</button>
+                        {{#if (editedSlot 'deliver')}}
+                        <button class="ui button js-slot-deliver-close" type="button">Fermer</button>
                         {{else}}
-                        <button class="primary ui button js-slot-create" type="button">Ajouter un créneau</button>
+                        <button class="primary ui button js-slot-deliver-create" type="button">Ajouter un créneau</button>
                         {{/if}}
                     </div>
                 </div>
             </div>
             <div class="six wide column">
-                {{#if editedSlot}}
+                {{#if (editedSlot 'deliver')}}
                 <div class="ui segments">
                     <div class="ui segment">
                         <h1 class="ui header">Modifier le créneau</h1>
                     </div>
-                    {{> slotEdit (selectSlot editedSlot)}}
+                    {{> slotEdit (selectSlot (editedSlot 'deliver'))}}
+                </div>
+                {{/if}}
+            </div>
+            <!-- PICKUP SLOTS       -->
+            <!-- PICKUP SLOTS       -->
+            <!-- PICKUP SLOTS       -->
+            <div class="ten wide column">                
+                <div class="ui segments">
+                    <div class="ui segment">
+                        <h1 class="ui header">Créneaux de retraits</h1>
+                    </div>
+                    <div class="ui segment">
+                        <table class="ui very basic celled fluid table">
+                            <tbody>
+                                <tr>
+                                  <td></td>
+                                  {{#each slot in (slots 'pickup')}}
+                                      {{>slotList (selectSlot slot)}}
+                                  {{/each}}
+                                </tr>
+                                {{#each day in week}}
+                                <tr>
+                                    <td class="ui small header">{{day.name}}</td>
+                                    {{#each slot in (slots 'pickup')}}
+                                        {{>slotCell (toggleSlot slot day)}}
+                                    {{/each}}
+                                </tr>
+                                {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="ui segment right aligned">
+                        {{#if (editedSlot 'pickup')}}
+                        <button class="ui button js-slot-pickup-close" type="button">Fermer</button>
+                        {{else}}
+                        <button class="primary ui button js-slot-pickup-create" type="button">Ajouter un créneau</button>
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
+            <div class="six wide column">
+                {{#if (editedSlot 'pickup')}}
+                <div class="ui segments">
+                    <div class="ui segment">
+                        <h1 class="ui header">Modifier le créneau</h1>
+                    </div>
+                    {{> slotEdit (selectSlot (editedSlot 'pickup'))}}
                 </div>
                 {{/if}}
             </div>
@@ -123,7 +170,7 @@
             <div class="ten wide column">                
                 <div class="ui segments">
                     <div class="ui segment">
-                        <h1 class="ui header">Tarifs de livraison</h1>
+                        <h1 class="ui header">Tarifs et zones de livraison</h1>
                     </div>
                     <div class="ui segment">
                         <div class="ui middle aligned divided selection list">

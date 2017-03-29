@@ -31,8 +31,16 @@ Template.shippingForm.onCreated(function() {
 
 
 Template.shippingForm.helpers({
-    isDelivered() {
-        return this.shipping.mode
+    shippingOptions() {
+        return { 
+            modes : Modes.find({}, { sort: { index: 1 } })
+        };
+    },
+    
+    shippingMode() {
+        if (this.shipping.mode) {
+            return (this.shipping.mode == "velo") ? 'deliver' : 'pickup';
+        } else {return null}       
     },
     
     isBicycle() {
@@ -43,13 +51,7 @@ Template.shippingForm.helpers({
         return (this.invoice.command >= 40);
     },
     
-    shippingOptions() {
-        return { 
-            modes : Modes.find({}, { sort: { index: 1 } })
-        };
-    },
-    
-    shippingDates() {
+    shippingDates(mode) {
         var MAX_DATES = 30;
         var MAX_BOOKING = 2;
         
@@ -75,7 +77,7 @@ Template.shippingForm.helpers({
         //console.log('bookedSlots:', nextDay, bookedSlots);
         
         // Open slots (3)
-        const slots = Slots.find({}, { sort: { index: 1 } });
+        const slots = Slots.find({mode : mode}, { sort: { index: 1 } });
         var openingSlots = {};
         slots.forEach(function (slot) {
             //console.log("Opening slot:", slot.name, slot.open);

@@ -11,7 +11,7 @@
               <i class="dropdown icon"></i>
               <div class="menu">
                 {{#each mode in shippingOptions.modes}}
-                <div class="item" data-value="{{mode.tag}}">
+                <div class="item js-mode-select" data-value="{{mode.tag}}">
                   <i class="{{mode.icon}} icon"></i>
                   {{mode.description}}
                 </div>
@@ -19,8 +19,7 @@
               </div>
             </div>
           </div>
-          
-          {{#if isDelivered}}
+          {{#if shippingMode}}
           <div class="field js-deliver-datetime">
             <div class="fields">
               <div class="nine wide field">
@@ -30,7 +29,7 @@
                   <div class="default text css-date">Date</div>
                   <i class="dropdown icon"></i>
                   <div class="menu">
-                    {{#each date in shippingDates}}
+                    {{#each date in (shippingDates shippingMode)}}
                     <div class="item css-date" data-value="{{date.value}}">
                       {{date.text}}
                     </div>
@@ -83,7 +82,7 @@
       </td>
     </tr>
   </tbody>
-  {{#if isDelivered}}
+  {{#if shippingMode}}
   <tfoot class="ui header">
     <tr>
       <th class="ui center aligned" colspan=3>

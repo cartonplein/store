@@ -15,7 +15,7 @@ Template.shippingAdmin.onCreated(function() {
   
   this.state = new ReactiveDict();
   this.state.setDefault({
-    selectedSlot: null,
+    selectedSlot: {deliver : null, pickup : null},
     selectedDay: null,
     selectedZone: null,
     selectedMode: null
@@ -42,13 +42,13 @@ Template.shippingAdmin.helpers({
     return instance.week;
   },
   
-  slots() {
-    return Slots.find({}, { sort: { index: 1 } });    
+  slots(mode) {
+    return Slots.find({mode : mode}, { sort: { index: 1 } });    
   },
   
-  editedSlot() {
+  editedSlot(mode) {
     const instance = Template.instance();
-    return instance.state.get("selectedSlot");
+    return instance.state.get("selectedSlot")[mode];
   },
 
   selectSlot(slot) {
@@ -56,11 +56,15 @@ Template.shippingAdmin.helpers({
     return {
       slot,
       onSelect() {
-        instance.state.set('selectedSlot', slot);
+        let selectedSlot = instance.state.get("selectedSlot");
+        selectedSlot[slot.mode] = slot;
+        instance.state.set('selectedSlot', selectedSlot);  
         console.log("Editing slot: ", slot._id);
       },
       onClose() {
-        instance.state.set('selectedSlot', null);
+        let selectedSlot = instance.state.get("selectedSlot");
+        selectedSlot[slot.mode] = null;
+        instance.state.set('selectedSlot', selectedSlot); 
         console.log("Close slot: ", slot._id);
       }
     };
@@ -180,23 +184,47 @@ Template.shippingAdmin.events({
     .js.slot
     .js.slot
   */
-  'click .js-slot-create'(event, instance) {
+  'click .js-slot-deliver-create'(event, instance) {
     // Add slot into the collection
-    Meteor.call('slots.create', {open : [false,false,false,false,false,false,false]},
+    Meteor.call('slots.create', {open : [false,false,false,false,false,false,false], mode : 'deliver'},
       function(error, result){
           if (error) { console.log("Error adding slot: ", error);}
           else {
             console.log("Adding new slot: ", result);
             // Editing this new slot
-            instance.state.set('selectedSlot', {_id: result});
+            let selectedSlot = instance.state.get('selectedSlot');
+            selectedSlot['deliver'] = {_id: result, mode : 'deliver'};
+            instance.state.set('selectedSlot', selectedSlot);
           }
     });
   },
-  'click .js-slot-close'(event, instance) {
+  'click .js-slot-deliver-close'(event, instance) {
     // Close slot
-    instance.state.set('selectedSlot', null);
+    let selectedSlot = instance.state.get("selectedSlot");
+    selectedSlot['deliver'] = null;
+    instance.state.set('selectedSlot', selectedSlot); 
   },
-  
+  'click .js-slot-pickup-create'(event, instance) {
+    // Add slot into the collection
+    Meteor.call('slots.create', {open : [false,false,false,false,false,false,false], mode : 'pickup'},
+      function(error, result){
+          if (error) { console.log("Error adding slot: ", error);}
+          else {
+            console.log("Adding new slot: ", result);
+            // Editing this new slot
+            let selectedSlot = instance.state.get('selectedSlot');
+            selectedSlot['pickup'] = {_id: result, mode : 'pickup'};
+            instance.state.set('selectedSlot', selectedSlot);
+          }
+    });
+  },
+  'click .js-slot-pickup-close'(event, instance) {
+    // Close slot
+    let selectedSlot = instance.state.get("selectedSlot");
+    selectedSlot['pickup'] = null;
+    instance.state.set('selectedSlot', selectedSlot); 
+  },
+
   /*
     .js.day
     .js.day
@@ -254,6 +282,7 @@ Template.shippingAdmin.events({
           else {
             console.log("Adding new mode: ", result);
             // Editing this new mode
+            this.onSelect()
             instance.state.set('selectedMode', {_id: result});
           }
     });
@@ -313,7 +342,7 @@ Template.slotEdit.events({
     this.onClose();
   },
   
-  'click .js-slot-cancel'() {
+  'click .js-slot-close'() {
     // Cancel editing slot
     this.onClose();
   },
