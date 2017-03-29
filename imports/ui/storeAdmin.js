@@ -46,7 +46,7 @@ Template.storeAdmin.helpers({
   
   orders(state, date) {
     var filter = Object.assign({}, state, {'shipping.date': date});
-    return Orders.find(filter, {sort: {'shipping.time':1, '_id':1}});
+    return Orders.find(filter, {sort: {'shipping.date': date, 'shipping.time':1, '_id':1}});
   },
   
   states() {
@@ -77,14 +77,16 @@ Template.storeAdmin.helpers({
   },
   
   dates(filter) {
-    const orders = Orders.find(filter, {sort: { 'shipping.date':1, 'shipping.time':1}}, { fields: {'shipping.date':1}}).fetch();
-    var dates = [];
-    for (let i=0; i < orders.length; i++) {
-      let date = orders[i].shipping.date;
-      if (dates.indexOf(date) == -1) {
-        dates.push(date);}
-      //console.log('dates:', date, orders[i]._id);
-    };
+    // Fetch unique dates
+    var dates = _.uniq(Orders.find(filter, {
+        sort: {'shipping.date':1}, fields: {'shipping.date': true}
+      }).fetch().map(function(x) {
+        return x.shipping.date;
+        }), true);
+    // Sort dates
+    dates.sort(function (a, b) {
+      return moment(a, "DD/MM/YYYY") - moment(b, "DD/MM/YYYY");
+    });
     //console.log('dates:', dates);
     return dates;
   },
