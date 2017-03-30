@@ -236,7 +236,7 @@ Template.storeHome.helpers({
     const instance = Template.instance();
     return {
       total,
-      onAdd(client, mode, charge) {
+      onAdd(client, status, charge) {
         // Define assignment
         var assignment = '';
         const shipping = instance.order.get('shipping');
@@ -253,18 +253,17 @@ Template.storeHome.helpers({
           shipping: instance.order.get('shipping'),
           invoice: instance.order.get('invoice'),
           charge : charge,
-          workflow : {paid: (mode == 'LIVE'), prepared:false, delivered:false, canceled:false, assignment:assignment, comments:""}
+          workflow : {paid: (status == 'LIVE'), prepared:false, delivered:false, canceled:false, assignment:assignment, comments:""}
         };
         //console.log("onAdd order:", charge, client, instance.order.keys);
         // Add product into the collection
         Meteor.call('Orders.create', order,
           function(error, result){
-              if (error) { console.log("Error adding order: ", error);}
+              if (error) { console.log("Error adding order: ", order, error);}
               else {
                 console.log("Adding new order: ", result);
-                // In your client code: asynchronously send an email
-                console.log("Send email to: ", order.client.email);
 
+                // In your client code: asynchronously send an email
                 const mode = Modes.findOne({ tag:order.shipping.mode });
                 var email = {
                   from: 'Carton plein <bonjour@cartonplein.org>',
@@ -288,7 +287,10 @@ Template.storeHome.helpers({
                   total: total,
                 };
                 var template = 'email-billing.html';
-                Meteor.call('sendEmail', email, data, template);
+                if (status !== 'ERROR') {
+                  console.log("Send email to: ", order.client.email);
+                  Meteor.call('sendEmail', email, data, template)
+                };
               }
         });
       },

@@ -118,7 +118,7 @@ Template.paymentForm.events({
             const stripeToken = response.id;
     	    //console.log(status, response);
     	    
-    	    Meteor.call('charge.create', stripeToken, mode, client.email, total, 
+    	    Meteor.call('charge.create', stripeToken, mode, client, total, 
     	        function(error, charge) {
     	            if (charge) {
     	                console.log('Paiement réussi:', charge.id)
@@ -133,6 +133,7 @@ Template.paymentForm.events({
     	            }
     	            else {
     	                console.log('Echec du paiement !', error)
+    	                onAdd(client, 'ERROR', '');
     	                onError();
     	            }
     	            

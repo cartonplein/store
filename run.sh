@@ -1,3 +1,7 @@
+# Run development code on database
+# Author : DHU
+# Date : 2017-03
+
 env=$1
 
 Run () {

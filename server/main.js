@@ -14,7 +14,7 @@ var domain = 'mg.cartonplein.org';
 var mailgun = require('mailgun-js')({apiKey: api_key, domain: domain});
  
 Meteor.methods({
-    'charge.create'(token, mode, email, amount) {
+    'charge.create'(token, mode, client, amount) {
         //console.log('Creating charge:', email, amount);
         var sk = '';
         if (mode == 'TEST') {sk = "sk_test_9DnLGIZQ59VuPsFkezye8wxY"};
@@ -24,11 +24,11 @@ Meteor.methods({
             amount: parseInt(amount * 100),
             currency: "eur",
             source: token, // obtained with Stripe.js
-            description: "[boutique] " + email,
+            description: "[cartons] " + client.firstname + ' ' + client.lastname + ' <' + client.email + '> ' + client.phone,
             //receipt_email: email,
             }).then(function(charge) {
                 // asynchronously called
-                console.log('CREATE charge:', email, amount, charge.id);
+                console.log('CREATE charge:', charge.id, amount, client.email);
                 return charge;    
             });
     },
