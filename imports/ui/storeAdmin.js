@@ -277,7 +277,8 @@ Template.orderEdit.onRendered(function() {
 Template.orderEdit.helpers({
   shippingDates(mode) {
       var MAX_DATES = 30;
-      var MAX_BOOKING = 2;
+      var MAX_BOOKING = 10;
+      var MIN_HOUR = -48;
       
       // Closing days (1)
       const days = Days.find({}, { sort: { date: 1 } });
@@ -316,7 +317,7 @@ Template.orderEdit.helpers({
       // Next days and slots available (4) = (3) - (2) - (1)
       var openDates = [];
       var availableSlots = {};
-      var shippingDate = moment().add(12, 'hours');
+      var shippingDate = moment().add(MIN_HOUR, 'hours');
       var i = 0;
       while (i < MAX_DATES) {
           // Open days
