@@ -25,6 +25,12 @@ Template.storeAdmin.onCreated(function() {
   this.formatDate = function(date) {
     return moment(date, "DD/MM/YYYY").format('dddd DD MMMM YYYY');
   };
+  this.updateUI = function () {
+    // Update UI callback after DOM change (for specific semantic UI behavior)
+    // console.log("Update UI DOM");
+    Tracker.flush();
+    this.$('.ui.dropdown').dropdown();
+  };
 });
 
 Template.storeAdmin.onRendered(function() {
@@ -151,9 +157,10 @@ Template.storeAdmin.helpers({
           return false;
         }
       },
-      workflow() {
-        //console.log('workflow:', instance.state.get("workflow"));
-        return instance.state.get("selectedOrder").workflow;
+      shippingMode(order) {
+        if (order) {
+          return (order.shipping.mode == "velo") ? 'deliver' : 'pickup';
+        } else {return null}       
       },
       assignment(order) {
         var workflow = order.workflow;
@@ -177,7 +184,7 @@ Template.storeAdmin.helpers({
       },
       onSelect(order) {
         instance.state.set('selectedOrder', order);
-        //console.log("Editing order: ", order)
+        instance.updateUI();
       },
       onCheck(state) {
         var order = instance.state.get('selectedOrder');
@@ -185,15 +192,16 @@ Template.storeAdmin.helpers({
         instance.state.set('selectedOrder', order);
         //console.log("Toogle workflow: ", order.workflow[state])
       },
-      onShipping(field, value) {
+      onChange(dimension, field, value) {
         var order = instance.state.get('selectedOrder');
-        order.shipping[field] = value;
-        instance.state.set('selectedOrder', order);
-        console.log("onChange shipping:", order.shipping[field]);
+        if (order) {
+          order[dimension][field] = value;
+          instance.state.set('selectedOrder', order);
+          console.log("onChange:", field, order[dimension][field]);
+        }
       },
       onClose(editing) {
         instance.state.set('selectedOrder', null);
-        instance.state.set('workflow', null);
         //console.log("Close editing: ", order._id)
       }
     };
@@ -229,7 +237,7 @@ Template.orderList.onRendered(function() {
 });
 
 Template.orderList.events({
-  'click .item'() {
+  'click .item'(event, instance) {
     console.log("Selecting order: ", this.order._id);
     this.onSelect(this.order);
   }
@@ -252,76 +260,112 @@ Template.orderEdit.onCreated(function() {
       slots : []
   });
   
-  this.updateUI = function () {
+  this.updateUI = function (dropdown) {
     // Update UI callback after DOM change (for specific semantic UI behavior)
     // console.log("Update UI DOM");
     Tracker.flush();
-    this.$('.ui.dropdown').dropdown();
+    this.$(dropdown).dropdown();
   };
 });
 
 Template.orderEdit.onRendered(function() {
-  // Enable toggle action
+  // Enable action
   $('.ui.dropdown').dropdown();
   $('.ui.sticky').sticky({context: '#context'});
 });
 
 Template.orderEdit.helpers({
-  shippingDates() {
-    var maxDates = 10;
-    
-    // Jours de fermetures
-    const days = Days.find({}, { sort: { date: 1 } });
-    var closingDays = {};
-    days.forEach(function (day) {
-        //console.log("Closed day:", day.date);
-        closingDays[day.date] = true;
-    });
-    
-    // Créneaux ouverts
-    const slots = Slots.find({}, { sort: { index: 1 } });
-    var openingSlots = {};
-    slots.forEach(function (slot) {
-        //console.log("Opening slot:", slot.name, slot.open);
-        //closingDays[day.date] = true;
-        
-        for (var day=0; day < slot.open.length; day++) {
-            if (!openingSlots[day]) {openingSlots[day] = []};
-            if (slot.open[day]) {openingSlots[day].push(slot.name)};
-        }
-    });
+  shippingDates(mode) {
+      var MAX_DATES = 30;
+      var MAX_BOOKING = 2;
+      
+      // Closing days (1)
+      const days = Days.find({}, { sort: { date: 1 } });
+      var closingDays = {};
+      days.forEach(function (day) {
+          //console.log("Closed day:", day.date);
+          closingDays[day.date] = true;
+      });
 
-    var openDates = [];
-    var availableSlots = {};
-    var i = 0;
-    while (i < maxDates) {
-        var shippingDate = moment().add(i, 'd');
-        if (closingDays[shippingDate.format('YYYY-MM-DD')]) {
-            //console.log('Date is closed: ', shippingDate.format('DD/MM/YYYY'));
-            maxDates++;
-        } else {
-            const openSlots = openingSlots[shippingDate.day()];
-            if (!openSlots) { return null };
-            if (openSlots.length > 0) {
-                //console.log('Available slots : ', shippingDate.format('DD/MM/YYYY'), openingSlots[shippingDate.day()]);    
-                const openDate = {text: shippingDate.format('dddd DD MMMM YYYY'), 
-                    value: shippingDate.format('DD/MM/YYYY'), 
-                    slots: openingSlots[shippingDate.day()]};
-                availableSlots[openDate.value] = openDate.slots
-                openDates.push(openDate);
-            }
-            else {
-                //console.log('No slots: ', shippingDate.format('DD/MM/YYYY'));
-                maxDates++;
-            }
-        }
-        i++;    
-    };
-    //console.log('availableSlots: ', availableSlots);
-    const instance = Template.instance();
-    instance.state.set('slots', availableSlots);
-    //console.log('openDates: ', openDates);
-    return openDates;
+      // Booked slots (2)
+      const nextDay = moment().format('DD/MM/YYYY')
+      const booking = Orders.find({'shipping.date': { $gte : nextDay }, 'shipping.mode' : 'velo'}, { sort: { 'shipping.date': 1, 'shipping.time': 1} });
+      var bookedSlots = {};
+      booking.forEach(function (order) {
+          let date = order.shipping.date;
+          let time = order.shipping.time;
+          if (!bookedSlots[date]) {bookedSlots[date] = {}};
+          if (!bookedSlots[date][time]) {bookedSlots[date][time] = 0}
+          bookedSlots[date][time]++;
+      });
+      //console.log('bookedSlots:', nextDay, bookedSlots);
+      
+      // Open slots (3)
+      const slots = Slots.find({mode : mode}, { sort: { index: 1 } });
+      var openingSlots = {};
+      slots.forEach(function (slot) {
+          //console.log("Opening slot:", slot.name, slot.open);
+          //closingDays[day.date] = true;
+          
+          for (var day=0; day < slot.open.length; day++) {
+              if (!openingSlots[day]) {openingSlots[day] = []};
+              if (slot.open[day]) {openingSlots[day].push(slot.name)};
+          }
+      });
+      
+      // Next days and slots available (4) = (3) - (2) - (1)
+      var openDates = [];
+      var availableSlots = {};
+      var shippingDate = moment().add(12, 'hours');
+      var i = 0;
+      while (i < MAX_DATES) {
+          // Open days
+          // Open days
+          // Open days
+          if (!closingDays[shippingDate.format('YYYY-MM-DD')]) { 
+              // Open slots
+              // Open slots
+              // Open slots
+              let openSlots = openingSlots[shippingDate.day()];
+              if (!openSlots) { return null };
+              //console.log('Available slots : ', shippingDate.format('DD/MM/YYYY'), openingSlots[shippingDate.day()]);
+              
+              if (openSlots.length > 0) {
+                  // Free slots
+                  // Free slots
+                  // Free slots
+                  let date = shippingDate.format('DD/MM/YYYY');
+                  //console.log('openSlots:', date, openSlots, bookedSlots[date]);
+                  var freeSlots = [];
+                  if (bookedSlots[date]) {
+                      // Removing full booking slots
+                      for (let s = 0; s < openSlots.length; s++) {
+                          let slot = openSlots[s];
+                          if (bookedSlots[date][slot] < MAX_BOOKING || !bookedSlots[date][slot]) {
+                              freeSlots.push(slot);
+                          }
+                      }
+                  } else {
+                      // Keeping all slots
+                      freeSlots = openSlots;
+                  }
+                  if (freeSlots.length > 0) {
+                      const openDate = {
+                          text: shippingDate.format('dddd DD MMMM YYYY'), 
+                          value: date, 
+                          slots: freeSlots};
+                      availableSlots[openDate.value] = openDate.slots
+                      openDates.push(openDate);
+                  }
+              }
+          }
+          shippingDate.add(1, 'days');
+          i++;    
+      };
+      //console.log('availableSlots: ', availableSlots);
+      const instance = Template.instance();
+      instance.state.set('slots', availableSlots);
+      return openDates;
   },
   
   shippingSlots() {
@@ -359,21 +403,26 @@ Template.orderEdit.events({
   },
   
   'change .js-order-date'(event, instance) {
-        //console.log("Change deliver", event.target.name, "=", event.target.value);
-        this.onShipping(event.target.name, event.target.value);
-        this.onShipping('time', null);
-        instance.$('.js-order-time').dropdown('clear');
-        instance.updateUI();
-    },
-
+    //console.log("Change deliver", event.target.name, "=", event.target.value);
+    this.onChange('shipping', event.target.name, event.target.value);
+    //this.onChange('shipping', 'time', '');
+    instance.$('.js-order-time').dropdown('clear');
+    instance.updateUI('.ui.dropdown');
+  },
+  
   'change .js-order-time'(event, instance) {
-      //console.log("Change deliver", event.target.name, "=", event.target.value);
-      this.onShipping(event.target.name, event.target.value);
+    this.onChange('shipping', event.target.name, event.target.value);
+    instance.updateUI('.ui.dropdown');  
+  },
+  
+  'change .js-order-assignment'(event, instance) {
+    this.onChange('workflow', event.target.name, event.target.value);
+    instance.updateUI('.ui.dropdown');
   },
   
   'click .js-order-update'(event, instance) {
     var shipping = this.order.shipping;
-    var workflow = this.workflow();
+    var workflow = this.order.workflow;
     shipping['date'] = instance.$('input[name=date]').val();
     shipping['time'] = instance.$('input[name=time]').val();
     shipping['details'] = instance.$('textarea[name=details]').val();
@@ -392,12 +441,12 @@ Template.orderEdit.events({
     this.onClose();
   },
   
-  'click .js-order-close'() {
+  'click .js-order-close'(event, instance) {
     // Cancel editing order
     this.onClose();
   },
   
-  'click .js-order-delete'() {
+  'click .js-order-delete'(event, instance) {
     // Delete order into the collection
     console.log("Deleting order: ", this.order._id);
     Meteor.call('Orders.delete', this.order._id);

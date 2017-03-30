@@ -136,8 +136,8 @@
                       <div class="text css-date">{{formatDate order.shipping.date}}</div>
                       <i class="dropdown icon"></i>
                       <div class="menu">
-                        {{#each date in shippingDates}}
-                        <div class="item css-date" data-value="{{date.value}}">
+                        {{#each date in (shippingDates (shippingMode order))}}
+                        <div class="item css-date" data-value="{{date.value}}" data-text="{{date.text}}">
                           {{date.text}}
                         </div>
                         {{/each}}
@@ -152,7 +152,7 @@
                       <i class="dropdown icon"></i>
                       <div class="menu">
                         {{#each time in shippingSlots}}
-                        <div class="item" data-value="{{time}}">
+                        <div class="item" data-value="{{time}}" data-text="{{time}}">
                           {{time}}
                         </div>
                         {{/each}}
@@ -175,17 +175,17 @@
             </h3>
             <div class="four fields">
                 <div class="field">
-                    <a class="ui fluid large {{#if workflow.paid}}pink{{/if}} label js-order-workflow" name="paid" style="text-align:center;">
+                    <a class="ui fluid large {{#if order.workflow.paid}}pink{{/if}} label js-order-workflow" name="paid" style="text-align:center;">
                         <i class="user icon"></i>Payée
                     </a>
                 </div>
                 <div class="field">
-                    <a class="ui fluid large {{#if workflow.prepared}}yellow{{/if}} label js-order-workflow" name="prepared" style="text-align:center;">
+                    <a class="ui fluid large {{#if order.workflow.prepared}}yellow{{/if}} label js-order-workflow" name="prepared" style="text-align:center;">
                         <i class="cube icon"></i>Préparée
                     </a>
                 </div>
                 <div class="field">
-                    <a class="ui fluid large {{#if workflow.delivered}}teal{{/if}} label js-order-workflow" name="delivered" style="text-align:center;">
+                    <a class="ui fluid large {{#if order.workflow.delivered}}teal{{/if}} label js-order-workflow" name="delivered" style="text-align:center;">
                         {{#if (bicycle order)}}
                         <i class="bicycle icon"></i>Livrée
                         {{else}}
@@ -194,7 +194,7 @@
                     </a>
                 </div>
                 <div class="field">
-                    <a class="ui fluid large {{#if workflow.canceled}}black{{/if}} label js-order-workflow" name="canceled" style="text-align:center;">
+                    <a class="ui fluid large {{#if order.workflow.canceled}}black{{/if}} label js-order-workflow" name="canceled" style="text-align:center;">
                         <i class="cancel icon"></i>Annulée
                     </a>
                 </div>
@@ -219,7 +219,7 @@
                 </div>
             </div>
         </div>
-        <div class="ui segment large form {{#unless workflow.canceled}}hidden{{/unless}}">
+        <div class="ui segment large form {{#unless order.workflow.canceled}}hidden{{/unless}}">
             <h3 class="ui header">
                 <i class="code icon"></i>Références
             </h3>
@@ -237,24 +237,28 @@
         <div class="ui segment right aligned">
             <button class="positive ui button js-order-update" type="button">Enregistrer</button>
             <button class="ui button js-order-close" type="button">Fermer</button>
-            <button class="negative ui button js-order-delete {{#unless workflow.canceled}}hidden{{/unless}}" type="button">Supprimer</button>
+            <button class="negative ui button js-order-delete {{#unless order.workflow.canceled}}hidden{{/unless}}" type="button">Supprimer</button>
         </div>
     </div>
 </template>
 
 <template name="orderMap">
-    {{#if origin}}
-        <iframe width="100%" height="300px" frameborder="0" style="border:0"
-        src="https://www.google.com/maps/embed/v1/directions?key=AIzaSyAdwtMs_PNCnHSNlz5L3GwULQdcsycg7vs
-              &origin={{origin}}
-              &destination={{destination}}
-              &mode=bicycling" allowfullscreen>
-        </iframe>
+    {{#if destination}}
+        {{#if origin}}
+            <iframe width="100%" height="300px" frameborder="0" style="border:0"
+            src="https://www.google.com/maps/embed/v1/directions?key=AIzaSyAdwtMs_PNCnHSNlz5L3GwULQdcsycg7vs
+                  &origin={{origin}}
+                  &destination={{destination}}
+                  &mode=bicycling" allowfullscreen>
+            </iframe>
+        {{else}}
+            <iframe width="100%" height="300px" frameborder="0" style="border:0"
+                src="https://www.google.com/maps/embed/v1/place?q={{destination}}&key=AIzaSyAdwtMs_PNCnHSNlz5L3GwULQdcsycg7vs" 
+                allowfullscreen>
+            </iframe>
+        {{/if}}
     {{else}}
-        <iframe width="100%" height="300px" frameborder="0" style="border:0"
-            src="https://www.google.com/maps/embed/v1/place?q={{destination}}&key=AIzaSyAdwtMs_PNCnHSNlz5L3GwULQdcsycg7vs" 
-            allowfullscreen>
-        </iframe>
+        <div class="ui loading segment" width="100%" height="300px"></div>
     {{/if}}
 </template>
 

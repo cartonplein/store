@@ -167,7 +167,7 @@ Template.shippingForm.events({
     'change .js-deliver-date'(event, instance) {
         //console.log("Change deliver", event.target.name, "=", event.target.value);
         this.onChange(event.target.name, event.target.value);
-        this.onChange('time', null);
+        //this.onChange('time', null);
         instance.$('.js-deliver-time').dropdown('clear');
         instance.updateUI();
     },
