@@ -271,7 +271,7 @@ Template.orderEdit.onCreated(function() {
 Template.orderEdit.onRendered(function() {
   // Enable action
   $('.ui.dropdown').dropdown();
-  $('.ui.sticky').sticky({context: '#context'});
+  //$('.ui.sticky').sticky({context: '#context'});
 });
 
 Template.orderEdit.helpers({
