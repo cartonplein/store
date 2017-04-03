@@ -1,0 +1,79 @@
+<template name="sell">
+    {{> menuAdmin title="Extraction des ventes"}}
+    <div class="ui main container">
+        <table class="ui very basic collapsing celled table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Paiement</th>
+                    <th>Lieu</th>
+                    <th>C</th>
+                    <th>L</th>
+                    <th>S</th>
+                    <th>XL</th>
+                    <th>XXL</th>
+                    <th>A</th>
+                    <th>P</th>
+                    <th>T</th>
+                    <th>PL</th>
+                    <th>LIV</th>
+                    <th>COL</th>
+                    <th>DEM</th>
+                    <th>DIV</th>
+                    <th>NB</th>
+                    <th>CA</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each order in orders}}
+                <tr>
+                    <td>
+                        {{date order}}
+                    </td>
+                    <td>
+                        CB
+                    </td>
+                    <td>
+                        {{location order}}
+                    </td>
+                    {{#with (command order)}}
+                    <td>
+                        {{C}}
+                    </td>
+                    <td>
+                        {{L}}
+                    </td>
+                    <td>
+                        {{S}}
+                    </td>
+                    <td>
+                        {{XL}}
+                    </td>
+                    <td>
+                        {{XXL}}
+                    </td>
+                    <td>
+                        {{A}}
+                    </td>
+                    <td>
+                        {{P}}
+                    </td>
+                    <td>
+                        {{T}}
+                    </td>
+                    <td>
+                        {{PL}}
+                    </td>
+                    {{/with}}
+                    <td>{{shipping order}}</td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>{{order.invoice.quantity}}</td>
+                    <td>{{total order}}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+</template>

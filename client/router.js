@@ -24,3 +24,9 @@ FlowRouter.route('/backoffice', {
     BlazeLayout.render("mainLayout", {content: "storeAdmin"});
   }
 });
+
+FlowRouter.route('/sell', {
+  action: function() {
+    BlazeLayout.render("mainLayout", {content: "sell"});
+  }
+});
