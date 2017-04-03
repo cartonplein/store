@@ -1,3 +1,4 @@
+import { Meteor } from 'meteor/meteor';
 import { Template } from 'meteor/templating';
 import { ReactiveDict } from 'meteor/reactive-dict';
 import { ReactiveVar } from 'meteor/reactive-var';
@@ -104,10 +105,12 @@ Template.paymentForm.events({
     // Set TEST or LIVE key
     var mode = '';
     if (card.number == "4242424242424242") {
-        Stripe.setPublishableKey('pk_test_r0ZOieLnU8Ll7ueQut6qKK7l'); // TEST key
+        var pk = Meteor.settings.public.stripe.pk_test
+        Stripe.setPublishableKey(pk); // TEST key
         mode = 'TEST';
     } else {
-        Stripe.setPublishableKey('pk_live_5H6fe7uZfsYWu8qjHYrF25ls'); // LIVE key  
+        var pk = Meteor.settings.public.stripe.pk_live
+        Stripe.setPublishableKey(pk); // LIVE key  
         mode = 'LIVE';
     }
     

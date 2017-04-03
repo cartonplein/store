@@ -7,16 +7,16 @@ import '../imports/api/shipping.js';
 import '../imports/api/orders.js';
 import '../imports/api/beacon.js';
 
-var api_key = 'key-876d2256bb08c568ac133b36a46b3886';
-var domain = 'mg.cartonplein.org';
-var mailgun = require('mailgun-js')({apiKey: api_key, domain: domain});
- 
+var mg_api_key = Meteor.settings.private.mailgun.api_key;
+var mg_domain = Meteor.settings.private.mailgun.domain;
+var mailgun = require('mailgun-js')({apiKey: mg_api_key, domain: mg_domain});
+
 Meteor.methods({
     'charge.create'(token, mode, client, amount) {
         //console.log('Creating charge:', email, amount);
         var sk = '';
-        if (mode == 'TEST') {sk = "sk_test_9DnLGIZQ59VuPsFkezye8wxY"};
-        if (mode == 'LIVE') {sk = "sk_live_Jsjnw69DrCWZojtIoXZ8vfjt"};
+        if (mode == 'TEST') {sk = Meteor.settings.private.stripe.sk_test};
+        if (mode == 'LIVE') {sk = Meteor.settings.private.stripe.sk_live};
         var stripe = require("stripe")(sk);
         return stripe.charges.create({
             amount: parseInt(amount * 100),
@@ -40,7 +40,7 @@ Meteor.methods({
         
         Template.htmlEmail.helpers({
           subtotal(a, b) {
-            console.log('subtotal: ', a, b);
+            //console.log('subtotal: ', a, b);
             return (parseFloat(a) * parseFloat(b));
           }
         });
