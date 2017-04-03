@@ -257,7 +257,7 @@ Template.storeHome.helpers({
         };
         //console.log("onAdd order:", charge, client, instance.order.keys);
         // Add product into the collection
-        Meteor.call('Orders.create', order,
+        Meteor.call('orders.create', order,
           function(error, result){
               if (error) { console.log("Error adding order: ", order, error);}
               else {

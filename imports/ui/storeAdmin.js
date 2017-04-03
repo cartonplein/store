@@ -212,7 +212,7 @@ Template.storeAdmin.events({
   'click .js-order-create'(event, instance) {
 
     // Add order into the collection
-    Meteor.call('Orders.create', {},
+    Meteor.call('orders.create', {},
       function(error, result){
           if (error) { console.log("Error adding order: ", error);}
           else {
@@ -436,7 +436,7 @@ Template.orderEdit.events({
     };
 
     // Save order into the collection
-    Meteor.call('Orders.update', this.order._id, order);
+    Meteor.call('orders.update', this.order._id, order);
     
     // Leaving editing order
     this.onClose();
@@ -450,7 +450,7 @@ Template.orderEdit.events({
   'click .js-order-delete'(event, instance) {
     // Delete order into the collection
     console.log("Deleting order: ", this.order._id);
-    Meteor.call('Orders.delete', this.order._id);
+    Meteor.call('orders.delete', this.order._id);
     
     // Leaving editing order
     this.onClose();

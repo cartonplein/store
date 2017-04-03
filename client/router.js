@@ -1,5 +1,6 @@
 import { FlowRouter } from 'meteor/kadira:flow-router';
 import { BlazeLayout } from 'meteor/kadira:blaze-layout';
+import { HTTP } from 'meteor/http';
 
 FlowRouter.route('/', {
   action: function() {
@@ -28,5 +29,26 @@ FlowRouter.route('/backoffice', {
 FlowRouter.route('/sell', {
   action: function() {
     BlazeLayout.render("mainLayout", {content: "sell"});
+  }
+});
+
+FlowRouter.route('/beacon', {
+  action: function() {
+    HTTP.post("/api/beacon", {
+      data: {
+        "event": "LOCATION_CHANGED",
+        "beacon": {
+          "name": "My TiFiz",
+          "serialNumber": "E555",
+          "location": {
+            "latitude": 43.83883,
+            "longitude": 3.641531,
+            "timestamp": 1478187361745
+          }
+        }
+      }
+    }, function (err, res) {
+      console.log('beacon', res);
+    });
   }
 });

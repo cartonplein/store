@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
 import { check } from 'meteor/check';
+import { SimpleRest } from 'meteor/simple:rest';
  
 export const Orders = new Mongo.Collection('orders');
 
@@ -9,23 +10,23 @@ if (Meteor.isServer) {
   Meteor.publish('orders', function() {
     return Orders.find({});
   });
-} 
+}
  
 Meteor.methods({
-  'Orders.create'(order) {
+  'orders.create'(order) {
     const orderId = Orders.insert(order);
     console.log("CREATE order:", orderId);
     return orderId;
   },
-  'Orders.read'(orderId) {
+  'orders.read'(orderId) {
     console.log("READ order:", orderId);
     return Orders.findOne(orderId);
   },
-  'Orders.update'(orderId, order) {
+  'orders.update'(orderId, order) {
     console.log("UPDATE order:", orderId);
     Orders.update(orderId, {$set: order});
   },
-  'Orders.delete'(orderId) {
+  'orders.delete'(orderId) {
     console.log("DELETE order:", orderId);
     Orders.remove(orderId);
   },

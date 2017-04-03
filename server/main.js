@@ -5,9 +5,7 @@ import { SSR } from 'meteor/meteorhacks:ssr';
 import '../imports/api/products.js';
 import '../imports/api/shipping.js';
 import '../imports/api/orders.js';
-
-//var stripe = require("stripe")("sk_test_9DnLGIZQ59VuPsFkezye8wxY"); // TEST key
-//var stripe = require("stripe")("sk_live_Jsjnw69DrCWZojtIoXZ8vfjt"); // LIVE key
+import '../imports/api/beacon.js';
 
 var api_key = 'key-876d2256bb08c568ac133b36a46b3886';
 var domain = 'mg.cartonplein.org';
