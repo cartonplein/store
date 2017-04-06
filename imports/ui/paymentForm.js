@@ -20,6 +20,9 @@ Template.paymentForm.onCreated(function() {
     });
 });
 
+Template.paymentForm.onRendered(function() {
+});
+
 Template.paymentForm.helpers({
     client() {
         const instance = Template.instance();
@@ -42,6 +45,13 @@ Template.paymentForm.helpers({
     },
     
     valid() {
+        function isEmail(email) {
+          var validation = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+          return validation.test(email);
+        };
+        function isPhone(phone) {
+          return phone.replace(/\s+/g, '').length >= 10;
+        };
         const instance = Template.instance();
         const client = {
             firstname: instance.payment.get('firstname'),
@@ -56,8 +66,9 @@ Template.paymentForm.helpers({
             cvc: instance.payment.get('cvc')
         };
         return (
-            (client.firstname !== '') && (client.lastname !== '')
-            && (client.email !== '') && (client.phone !== '')
+            this.total > 0
+            && (client.firstname !== '') && (client.lastname !== '')
+            && (isEmail(client.email) && isPhone(client.phone))
             && Stripe.card.validateCardNumber(card.number)
             && Stripe.card.validateExpiry(card.exp_month, card.exp_year)
             && Stripe.card.validateCVC(card.cvc))
@@ -74,7 +85,7 @@ Template.paymentForm.events({
     //console.log("Change payment:", event.target.name, "=", event.target.value);
     instance.payment.set(event.target.name, event.target.value);
   },
-  
+
   'click .js-pay-button'(event, instance) {
     instance.processing.set(true);  
     const client = {
