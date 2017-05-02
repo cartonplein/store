@@ -82,8 +82,8 @@ Template.paymentForm.helpers({
 
 Template.paymentForm.events({
   'keyup .js-pay-form' (event, instance) {
-    //console.log("Change payment:", event.target.name, "=", event.target.value);
-    instance.payment.set(event.target.name, event.target.value);
+    //console.log("Change payment:", event.target.className, "=", event.target.value);
+    instance.payment.set(event.target.className, event.target.value);
   },
 
   'click .js-pay-button'(event, instance) {

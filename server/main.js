@@ -5,11 +5,16 @@ import { SSR } from 'meteor/meteorhacks:ssr';
 import '../imports/api/products.js';
 import '../imports/api/shipping.js';
 import '../imports/api/orders.js';
-import '../imports/api/beacon.js';
+import '../imports/api/beacons.js';
 
+// Initialize Mailgun
 var mg_api_key = Meteor.settings.private.mailgun.api_key;
 var mg_domain = Meteor.settings.private.mailgun.domain;
 var mailgun = require('mailgun-js')({apiKey: mg_api_key, domain: mg_domain});
+
+// Initialize Google Maps
+var gm_key = Meteor.settings.public.googleMaps.api_key;
+var googleMapsClient = require('@google/maps').createClient({key: gm_key, Promise: require('q').Promise});
 
 Meteor.methods({
     'charge.create'(token, mode, client, amount) {
@@ -31,7 +36,7 @@ Meteor.methods({
             });
     },
     
-    sendEmail: function (email, data, template) {
+    'mail.send'(email, data, template) {
         check([email.from, email.to, email.subject, email.text], [String]);
         // Let other method calls from the same client start running,
         // without waiting for the email sending to complete.
@@ -50,5 +55,19 @@ Meteor.methods({
         mailgun.messages().send(email, function (error, body) {
           console.log('SEND email to:', email.to);
         });
+    },
+    
+    'map.geocode'(address) {
+        // Geocode an address
+        console.log('GEOCODING address:', address);
+        return googleMapsClient.geocode({
+            address: address
+        })
+        .asPromise()
+        .then(function(response) {
+            //console.log(response);
+            return response;
+        });
+
     }
 })

@@ -1,6 +1,7 @@
 # Run development code on database
 # Author : DHU
 # Date : 2017-03
+# Usage : ./run.sh [DEV|STAG|PROD]
 
 env=$1
 

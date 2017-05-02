@@ -7,11 +7,11 @@
             <div class="two fields">
               <div class="field">
                 <label>Prénom</label>
-                <input type="text" name="firstname" value="{{client.firstname}}" placeholder="Prénom">
+                <input type="text" class="firstname" value="{{client.firstname}}" placeholder="Prénom">
               </div>
               <div class="field">
                 <label>Nom</label>
-                <input type="text" name="lastname" value="{{client.lastname}}" placeholder="Nom">
+                <input type="text" class="lastname" value="{{client.lastname}}" placeholder="Nom">
               </div>
             </div>
         </div>
@@ -19,11 +19,11 @@
             <div class="two fields">
               <div class="field">
                 <label>Mél*</label>
-                <input type="email" name="email" value="{{client.email}}" placeholder="Mél">
+                <input type="email" class="email" value="{{client.email}}" placeholder="Mél">
               </div>
               <div class="field">
                 <label>Téléphone*</label>
-                <input type="tel" name="phone" value="{{client.phone}}" placeholder="Téléphone">
+                <input type="tel" class="phone" value="{{client.phone}}" placeholder="Téléphone">
               </div>
             </div>
         </div>
@@ -43,23 +43,23 @@
         -->
         <div class="field">
             <label>Numéro de carte</label>
-            <input type="text" name="number" value="{{card.number}}" maxlength="16" placeholder="Numéro de carte">
+            <input type="text" class="number" value="{{card.number}}" maxlength="16" placeholder="Numéro de carte">
         </div>
         <div class="two fields">
             <div class="field">
                 <label>Expiration</label>
                 <div class="two fields">
                     <div class="field">
-                        <input type="text" name="exp_month" value="{{card.exp_month}}" maxlength="2" placeholder="MM">
+                        <input type="text" class="exp_month" value="{{card.exp_month}}" maxlength="2" placeholder="MM">
                     </div>
                     <div class="field">
-                        <input type="text" name="exp_year" value="{{card.exp_year}}" maxlength="2" placeholder="AA">
+                        <input type="text" class="exp_year" value="{{card.exp_year}}" maxlength="2" placeholder="AA">
                     </div>
                 </div>
             </div>
             <div class="field">
-                <label>CVV</label>
-                <input type="text" name="cvc" value="{{card.cvc}}" maxlength="3" placeholder="CVV">
+                <label>CVC</label>
+                <input type="text" class="cvc" value="{{card.cvc}}" maxlength="3" placeholder="CVC">
             </div>
         </div>
         <div class="field">

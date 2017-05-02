@@ -1,9 +1,11 @@
+import { Meteor } from 'meteor/meteor';
 import { Template } from 'meteor/templating';
 import { ReactiveDict } from 'meteor/reactive-dict';
+import { GoogleMaps } from 'meteor/dburles:google-maps';
 import { Orders } from '../api/orders.js';
 import { moment } from 'meteor/momentjs:moment';
 import { Slots, Days, Zones, Modes } from '../api/shipping.js';
-
+import { Beacons } from '../api/beacons.js';
 import './storeAdmin.html';
 import './menuAdmin.html';
 
@@ -254,6 +256,7 @@ Template.orderEdit.onCreated(function() {
   Meteor.subscribe('slots');
   Meteor.subscribe('days');
   Meteor.subscribe('modes');
+  Meteor.subscribe('beacons');
 
   this.state = new ReactiveDict();
   this.state.setDefault({
@@ -395,6 +398,21 @@ Template.orderEdit.helpers({
         return null;
       }
   },
+  
+  shippingVehicle() {
+      const vehicle = Beacons.findOne({ serialNumber:this.order.workflow.vehicle });
+      if (vehicle) {
+        return vehicle;
+      } else {
+        return null;
+      }
+  },
+  
+  vehicles() {
+      const vehicles = Beacons.find({}, { sort: { 'name':1 } });
+      //console.log('vehicles:', vehicles);
+      return vehicles;
+  }
 });
 
 Template.orderEdit.events({
@@ -421,6 +439,11 @@ Template.orderEdit.events({
     instance.updateUI('.ui.dropdown');
   },
   
+  'change .js-order-vehicle'(event, instance) {
+    this.onChange('workflow', event.target.name, event.target.value);
+    instance.updateUI('.ui.dropdown');
+  },
+  
   'click .js-order-update'(event, instance) {
     var shipping = this.order.shipping;
     var workflow = this.order.workflow;
@@ -428,6 +451,7 @@ Template.orderEdit.events({
     shipping['time'] = instance.$('input[name=time]').val();
     shipping['details'] = instance.$('textarea[name=details]').val();
     workflow['assignment'] = instance.$('input[name=assignment]').val();
+    workflow['vehicle'] = instance.$('input[name=vehicle]').val();
     workflow['comments'] = instance.$('textarea[name=comments]').val();
     
     const order = {
@@ -463,68 +487,64 @@ Template.orderEdit.events({
   orderMap
 */
 Template.orderMap.onCreated(function() { 
-  /*
-  const mapboxToken = 'pk.eyJ1IjoiY2FydG9ucGxlaW4iLCJhIjoiY2owczhlcmFzMDAyYjMybXNpNDIxajJ2aiJ9.xWRJAjqUVmCjDtNSHmWg6g'
-  var MapboxClient = require('mapbox');
-  this.geocoder = new MapboxClient(mapboxToken);
-  var mapboxgl = require('mapbox-gl/dist/mapbox-gl.js');
-  mapboxgl.accessToken = mapboxToken;
-  this.map = function (options) {return new mapboxgl.Map(options)};
-  */
+  // We can use the `ready` callback to interact with the map API once the map is ready.
+  GoogleMaps.ready('Map', function(map) {
+    // Add a marker to the map once it's ready
+    var marker = new google.maps.Marker({
+      position: map.options.center,
+      map: map.instance
+    });
+  });
+  
+  this.state = new ReactiveDict();
+  this.state.setDefault({
+      location : {lat : 48.856614, lng:2.3522219000000177},
+  });
 });
 
 Template.orderMap.onRendered(function() {
-  // Enable mapbox
-  /*
-  const options = {
-      container: 'mapbox',
-      style: 'mapbox://styles/mapbox/streets-v9',
-      center: [0, 0],
-      zoom: 13
-  };
-  var map = this.map(options);
-  console.log("Init map:", map);
-  
-  map(options).on('load', function() {
-      map.setLayoutProperty('country-label-lg', 'text-field', '{name_fr}');
-      // Add a source and layer displaying a point which will be animated in a circle.
-      map.addSource('point', {
-          "type": "geojson",
-          "data": {},
-      });
-    
-      map.addLayer({
-          "id": "point",
-          "source": "point",
-          "type": "circle",
-          "paint": {
-              "circle-radius": 10,
-              "circle-color": "#007cbf"
-          }
-      });
-  });
-  */
+  // Load Google Maps
+  GoogleMaps.load({ v: '3', key: Meteor.settings.public.googleMaps.api_key});
 });
+
 Template.orderMap.helpers({
-  /*
-  geocode(address, map) {
-      const instance = Template.instance();
-      console.log("Geocoding:", address);
-      
-      instance.geocoder.geocodeForward(address, function(err, res) {
-        console.log('location:', res.features[0]);
-        var location = {
-          "type": "Point",
-          "coordinates": res.features[0].center
-        };
-        map.getSource('point').setData(location);
-        map.jumpTo({ 'center': location.coordinates, 'zoom': 14 });
-      });
+  geocode(address) {
+    const instance = Template.instance();
+    
+    // Geocode address
+    Meteor.call('map.geocode', address, 
+      function(error, response) {
+        if (response) { 
+          //console.log("Geocoding address: ", address, response.json.results[0].geometry.location);
+          instance.state.set('location', response.json.results[0].geometry.location);
+          GoogleMaps.ready('Map', function(map) {
+            map.instance.setZoom(15);
+            map.instance.setCenter(response.json.results[0].geometry.location);
+            var marker = new google.maps.Marker({
+                position: response.json.results[0].geometry.location,
+                map: map.instance
+            });
+          })
+        } else {
+          //console.log("Error geocoding: ", address, error);
+          instance.state.set('location', null);
+        }
+      }
+    )
   },
-  
-  map() {
-      const instance = Template.instance();
-      return instance.map;
+  location() {
+    //geocode(this.destination);
+    const instance = Template.instance();
+    return instance.state.get('location');
+  },
+  MapOptions(location) {
+    // Make sure the maps API has loaded
+    if (GoogleMaps.loaded()) {
+      // Map initialization options
+      return {
+        center: new google.maps.LatLng(location.lat, location.lng),
+        zoom: 15
+      };            
+    }
   }
-  */
 });

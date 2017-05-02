@@ -212,6 +212,19 @@
                         <div class="item" data-value="sud" style="text-transform:capitalize;">sud</div>
                       </div>
                     </div>
+                    <br/>
+                    <label>Véhicule</label>
+                    <div class="ui fluid selection dropdown js-order-vehicle" style="text-transform:capitalize;">
+                      <input type="hidden" name="vehicle" value="{{order.workflow.vehicle}}">
+                      <div class="text">{{shippingVehicle.name}}</div>
+                      <i class="dropdown icon"></i>
+                      <div class="menu">
+                        <div class="item" data-value="" style="text-transform:capitalize;">aucun</div>
+                        {{#each vehicle in vehicles}}
+                        <div class="item" data-value="{{vehicle.serialNumber}}" style="text-transform:capitalize;">{{vehicle.name}}</div>
+                        {{/each}}
+                      </div>
+                    </div>
                 </div>
                 <div class="twelve wide field">
                     <label>Commentaires</label>
@@ -243,6 +256,7 @@
 </template>
 
 <template name="orderMap">
+    <!--
     {{#if destination}}
         {{#if origin}}
             <iframe width="100%" height="300px" frameborder="0" style="border:0"
@@ -259,6 +273,18 @@
         {{/if}}
     {{else}}
         <div class="ui loading segment" width="100%" height="300px"></div>
+    {{/if}}
+    -->
+    {{#if destination}}
+    {{geocode destination}}
+    <div class="ui segment">Location = {{location.lat}},{{location.lng}}</div>
+    <div class="ui segment map-container" 
+         style="width:100%;
+                max-width:100%;
+                height:300px;
+                padding:0">
+        {{> googleMap name="Map" options=(MapOptions location)}}
+    </div>
     {{/if}}
 </template>
 

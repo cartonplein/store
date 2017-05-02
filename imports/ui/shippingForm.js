@@ -48,7 +48,7 @@ Template.shippingForm.helpers({
     },
     
     isFree() {
-        return (this.invoice.command >= 40);
+        return (this.invoice.command >= this.shipping.min);
     },
     
     shippingDates(mode) {

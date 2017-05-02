@@ -31,6 +31,7 @@ Template.storeHome.onCreated(function() {
       zip: "", 
       city: "",
       free : false,
+      min : 45 // free shipping
     },
     invoice: {
       quantity:0, 
@@ -39,8 +40,7 @@ Template.storeHome.onCreated(function() {
     },
   });
   this.freeShipping = function () {
-    const MIN_COMMAND = 40;
-    return (parseFloat(this.order.get('invoice')['command']) >= MIN_COMMAND)
+    return (parseFloat(this.order.get('invoice')['command']) >= this.order.get('shipping')['min'])
   };
   
   this.payment = new ReactiveDict();
@@ -207,11 +207,9 @@ Template.storeHome.helpers({
             && (shipping['city'].length > 0)) {
               //console.log("livraison à vélo");
               const zone = Zones.find({zip : shipping['zip']}).fetch();
-              var price = null;
-              if (zone[0]) {price = zone[0].price}
-              //invoice['shipping'] = shipping['free'] ? 0 : parseFloat(price).toFixed(2);
-              invoice['shipping'] = parseFloat(price).toFixed(2);
-            } else {invoice['shipping'] = null};
+              invoice['shipping'] = zone[0] ? parseFloat(zone[0].price).toFixed(2) : null;
+          } else {
+            invoice['shipping'] = null};
         }
       }; 
       
@@ -289,7 +287,7 @@ Template.storeHome.helpers({
                 var template = 'email-billing.html';
                 if (status !== 'ERROR') {
                   console.log("Send email to: ", order.client.email);
-                  Meteor.call('sendEmail', email, data, template)
+                  Meteor.call('mail.send', email, data, template)
                 };
               }
         });
