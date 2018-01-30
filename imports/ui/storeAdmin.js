@@ -40,7 +40,6 @@ Template.storeAdmin.onRendered(function() {
   $('.ui.dropdown').dropdown();
   $('.ui.sticky').sticky({context: '#context'});
   $('.menu .item').tab();
-  $('.ui.modal').modal();
   // $('.ui.sticky').sticky('refresh');
 });
 
@@ -188,7 +187,6 @@ Template.storeAdmin.helpers({
       onSelect(order) {
         instance.state.set('selectedOrder', order);
         instance.updateUI();
-        $('.ui.modal').modal('show');
       },
       onCheck(state) {
         var order = instance.state.get('selectedOrder');
