@@ -54,7 +54,7 @@ Template.shippingForm.helpers({
     shippingDates(mode) {
         var MAX_DATES = 30;
         var MAX_BOOKING = 2;
-        var DELAY_BOOKING = 24;
+        var DELAY_BOOKING = 2;
         
         // Closing days (1)
         const days = Days.find({}, { sort: { date: 1 } });
@@ -93,7 +93,7 @@ Template.shippingForm.helpers({
         // Next days and slots available (4) = (3) - (2) - (1)
         var openDates = [];
         var availableSlots = {};
-        var shippingDate = moment().add(DELAY_BOOKING, 'hours');
+        var shippingDate = moment().add(DELAY_BOOKING, 'days');
         var i = 0;
         while (i < MAX_DATES) {
             // Open days

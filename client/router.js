@@ -32,6 +32,12 @@ FlowRouter.route('/sell', {
   }
 });
 
+FlowRouter.route('/customers', {
+  action: function() {
+    BlazeLayout.render("mainLayout", {content: "customers"});
+  }
+});
+
 FlowRouter.route('/beacon', {
   action: function() {
     HTTP.post("/api/beacon", {
