@@ -31,7 +31,7 @@ Template.storeHome.onCreated(function() {
       zip: "", 
       city: "",
       free : false,
-      min : 45 // free shipping
+      min : 60 // free shipping
     },
     invoice: {
       quantity:0, 
