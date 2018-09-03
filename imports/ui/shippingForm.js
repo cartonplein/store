@@ -53,8 +53,8 @@ Template.shippingForm.helpers({
     
     shippingDates(mode) {
         var MAX_DATES = 30;
-        var MAX_BOOKING = 2;
-        var DELAY_BOOKING = 2;
+        var MAX_BOOKING = 5;
+        var DELAY_BOOKING = 1;
         
         // Closing days (1)
         const days = Days.find({}, { sort: { date: 1 } });

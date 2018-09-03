@@ -1,4 +1,5 @@
 import { Template } from 'meteor/templating';
+import { Markdown } from 'meteor/markdown';
 
 import './productCatalog.html';
  
