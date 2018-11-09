@@ -3,9 +3,10 @@ import { Template } from 'meteor/templating';
 import { ReactiveDict } from 'meteor/reactive-dict';
 import { GoogleMaps } from 'meteor/dburles:google-maps';
 import { Orders } from '../api/orders.js';
+import { Collects } from '../api/collects.js';
 import { moment } from 'meteor/momentjs:moment';
 import { Slots, Days, Zones, Modes } from '../api/shipping.js';
-import { Beacons } from '../api/beacons.js';
+//import { Beacons } from '../api/beacons.js';
 import './storeAdmin.html';
 import './menuAdmin.html';
 
@@ -19,9 +20,11 @@ Template.storeAdmin.onCreated(function() {
   this.state = new ReactiveDict();
   this.state.setDefault({
     selectedOrder: null,
+    selectedCollect: null,
   });
   this.dates = [];
   Meteor.subscribe('orders');
+  Meteor.subscribe('collects');
   Meteor.subscribe('zones');
   
   this.formatDate = function(date) {
@@ -48,8 +51,12 @@ Template.storeAdmin.helpers({
     return Orders.find({}, { sort: { 'shipping.date':1, 'shipping.time':1} });
   },
   
+  collects() {
+    return Collects.find({});
+  },
+  
   count(state) {
-    return Orders.find(state).fetch().length;
+    return Orders.find(state).fetch().length + Collects.find(state).fetch().length;
   },
   
   orders(state, date) {
@@ -107,6 +114,11 @@ Template.storeAdmin.helpers({
   editedOrder() {
     const instance = Template.instance();
     return instance.state.get("selectedOrder");
+  },
+  
+  editedCollect() {
+    const instance = Template.instance();
+    return instance.state.get("selectedCollect");
   },
   
   selectOrder(order) {
@@ -185,6 +197,7 @@ Template.storeAdmin.helpers({
         return (assignment ? assignment : order.shipping.zip);
       },
       onSelect(order) {
+        instance.state.set('selectedCollect', null);
         instance.state.set('selectedOrder', order);
         instance.updateUI();
       },
@@ -207,12 +220,42 @@ Template.storeAdmin.helpers({
         //console.log("Close editing: ", order._id)
       }
     };
+  },
+  
+  selectCollect(collect) {
+    const instance = Template.instance();
+    return {
+      collect,
+      onSelect(collect) {
+        instance.state.set('selectedOrder', null);
+        instance.state.set('selectedCollect', collect);
+        console.log("Editing collect: ", collect._id)
+      },
+      onClose() {
+        instance.state.set('selectedCollect', null);
+        console.log("Close editing: ", collect._id)
+      },
+      formatPhone(phone) {
+        if (!phone) {return phone};
+        return phone.replace(/(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/, "$1 $2 $3 $4 $5");
+      },
+      formatDate(date) {
+        return instance.formatDate(date);
+      },
+      bicycle(collect) {
+        if (!collect.collecting) {return null}
+        return (collect.shipping.mode == 'velo');
+      },
+      collectingMode(collect) {
+        if (!collect.collecting) {return null}       
+        return (collect.collecting.mode == "velo") ? 'pickup' : 'pickup';
+      },
+    };
   }
 });
 
 Template.storeAdmin.events({
   'click .js-order-create'(event, instance) {
-
     // Add order into the collection
     Meteor.call('orders.create', {},
       function(error, result){
@@ -228,6 +271,18 @@ Template.storeAdmin.events({
     // Close order
     instance.state.set('selectedOrder', null);
   },
+  'click .js-collect-create'(event, instance) {
+  // Add collect into the collection
+  Meteor.call('collects.create', {},
+    function(error, result){
+        if (error) { console.log("Error adding collect: ", error);}
+        else {
+          console.log("Adding new collect: ", result);
+          // Editing this new collect
+          instance.state.set('selectedCollect', {_id: result});
+        }
+    });
+  },
 });
 
 /*
@@ -242,6 +297,21 @@ Template.orderList.events({
   'click .item'(event, instance) {
     console.log("Selecting order: ", this.order._id);
     this.onSelect(this.order);
+  }
+});
+
+/*
+  CollectList
+  CollectList
+  CollectList
+*/
+Template.collectList.onRendered(function() {
+});
+
+Template.collectList.events({
+  'click .item'(event, instance) {
+    console.log("Selecting collect: ", this.collect._id);
+    this.onSelect(this.collect);
   }
 });
 
@@ -547,4 +617,85 @@ Template.orderMap.helpers({
       };            
     }
   }
+});
+
+/*
+  collectEdit
+  collectEdit
+  collectEdit
+*/
+
+Template.collectEdit.onCreated(function() {
+  this.state = new ReactiveDict();
+});
+
+Template.collectEdit.onRendered(function() {
+  // Enable toggle action
+  $('.ui.checkbox').checkbox();
+});
+
+Template.collectEdit.helpers({
+  collectingDates(mode) {
+    return [];
+  },
+  collectingSlot() {
+    return [];
+  }
+  
+  
+});
+
+Template.collectEdit.events({
+  'click .js-collect-update'(event, instance) {
+    const form = instance.$('.js-collect-edit');
+    var contact = this.collect.contact || {};
+    var collecting = this.collect.collecting || {};
+    var workflow = this.collect.workflow || {};
+
+    contact['organization'] = instance.$('input[name=organization]').val();
+    contact['firstname'] = instance.$('input[name=firstname]').val();
+    contact['lastname'] = instance.$('input[name=lastname]').val();
+    contact['email'] = instance.$('input[name=email]').val();
+    contact['phone'] = instance.$('input[name=phone]').val();
+
+    collecting['address'] = instance.$('input[name=address]').val();
+    collecting['zip'] = instance.$('input[name=zip]').val();
+    collecting['city'] = instance.$('input[name=city]').val();
+    collecting['details'] = instance.$('textarea[name=details]').val();
+    collecting['date'] = instance.$('input[name=date]').val();
+    collecting['time'] = instance.$('input[name=time]').val();
+
+    workflow['comments'] = instance.$('textarea[name=comments]').val();
+    
+    const collect = {
+      contact : contact,
+      shipping : shipping,
+      workflow : workflow,
+    };
+
+    // Save product into the collection
+    Meteor.call('collects.update', this.collect._id, collect);
+    
+    // Leaving editing product
+    this.onClose();
+  },
+  
+  'click .js-collect-cancel'() {
+    // Cancel editing product
+    this.onClose();
+  },
+  
+  'click .js-collect-delete'() {
+    // Delete collect into the collection
+    console.log("Deleting collect: ", this.collect._id);
+    Meteor.call('collects.delete', this.collect._id);
+    
+    // Leaving editing product
+    this.onClose();
+  },
+  
+  'change .js-collect-image'(event, instance) {
+    // Leaving editing product
+    instance.$('.preview').attr('src', './assets/images/' + event.target.value);
+  },
 });

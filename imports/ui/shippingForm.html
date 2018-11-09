@@ -61,10 +61,6 @@
               <label>Adresse de livraison</label>
               <input type="text" name="address" value="{{shipping.address}}" placeholder="Adresse de livraison">
             </div>
-            <div class="field">
-              <label>Détails sur l'adresse</label>
-              <textarea name="details" value="{{shipping.details}}" placeholder="Codes, interphone, gardien, bâtiment, étage, porte secrète, etc." rows="2"></textarea>
-            </div>
             <div class="fields">
               <div class="four wide field">
                 <label>Code postal</label>
@@ -74,6 +70,10 @@
                 <label>Ville</label>
                 <input type="text" name="city" value="{{shipping.city}}" placeholder="Ville">
               </div>
+            </div>
+            <div class="field">
+              <label>Détails sur l'adresse</label>
+              <textarea name="details" value="{{shipping.details}}" placeholder="Codes, interphone, gardien, bâtiment, étage, porte secrète, etc." rows="2"></textarea>
             </div>
           </div>
           {{/if}}

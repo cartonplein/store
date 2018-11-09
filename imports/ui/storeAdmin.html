@@ -1,12 +1,12 @@
 <template name="storeAdmin">
-    {{> menuAdmin title="Gestion des commandes"}}
+    {{> menuAdmin title="Gestion des opérations"}}
     <div class="ui main" style="padding:1em">
         <div class="ui secondary menu">
             <a class="item pink" data-tab="unpaid">A payer ({{count (filter "unpaid")}})</a>
             <a class="item active yellow" data-tab="unprepared">A préparer ({{count (filter "unprepared")}})</a>
             <a class="item teal" data-tab="undelivered">A livrer ({{count (filter "undelivered")}})</a>
-            <a class="item green" data-tab="done">Terminée ({{count (filter "done")}})</a>
-            <a class="item black" data-tab="cancel">Annulée ({{count (filter "cancel")}})</a>
+            <a class="item green" data-tab="done">Terminé ({{count (filter "done")}})</a>
+            <a class="item black" data-tab="cancel">Annulé ({{count (filter "cancel")}})</a>
             <a class="item grey" data-tab="all">Tous ({{count (filter "all")}})</a>
         </div>
         <div class="ui stackable two column grid">
@@ -23,16 +23,26 @@
                                     {{#each order in (orders (filter state) date)}}
                                         {{> orderList (selectOrder order)}}
                                     {{/each}}
+                                    {{#each collect in collects}}
+                                        {{> collectList (selectCollect collect)}}
+                                    {{/each}}
                             </div>
                         </div>
                     </div>
                     {{/each}}
                 </div>
+                
                 {{/each}}
+                <div class="ui segment right aligned" style='border:0; box-shadow:none'>
+                    <button class="primary ui button js-collect-create" type="button">Ajouter</button>
+                </div>
             </div>
             <div class="column" id="context">
                 {{#if editedOrder}}
                     {{> orderEdit (selectOrder editedOrder)}}
+                {{/if}}
+                {{#if editedCollect}}
+                    {{> collectEdit (selectCollect editedCollect)}}
                 {{/if}}
             </div>
         </div>
@@ -71,6 +81,16 @@
             </div>
         </div>
         {{/if}}
+    </div>
+</template>
+
+<template name="collectList">
+    <div class="item">
+        <div class="content">
+            <h3 class="header">
+            {{collect._id}} > <span style="text-transform:uppercase">{{collect.name}}</span> 
+            </h3>
+        </div>
     </div>
 </template>
 
@@ -255,6 +275,157 @@
     </div>
 </template>
 
+<template name="collectEdit">
+    <div class="ui sticky segments">
+        <!--
+        <div class="ui header" id="map" style='width: 100%; height: 300px; margin: 0'>
+            {{> orderMap origin=shippingOrigin destination=shippingDestination}}
+        </div>
+        -->
+        
+        <div class="ui segment large form js-order-edit">
+            <h3 class="ui header">
+                <i class="cube icon"></i>Contact
+            </h3>
+            <div class="field">
+                <label>Organisation</label>
+                <input type="text" name="organization" value="{{collect.client.organization}}">
+            </div>
+            <div class="two fields">
+                <div class="field">
+                    <label>Prénom</label>
+                    <input type="text" name="firstname" value="{{collect.client.firstname}}">
+                </div>
+                <div class="field">
+                    <label>Nom</label>
+                    <input type="text" name="lastname" value="{{collect.client.lastname}}">
+                </div>
+            </div>
+            <div class="two fields">
+                <div class="field">
+                    <label>Mél</label>
+                    <input type="text" name="email" value="{{collect.client.email}}">                    
+                </div>
+                <div class="field">
+                    <label>Téléphone</label>
+                    <input type="text" name="phone" value="{{formatPhone collect.client.phone}}">
+                </div>
+            </div>
+        </div>
+        <div class="ui segment large form">
+            <h3 class="ui header">
+                <i class="bicycle icon"></i>Collecte à vélo
+            </h3>
+            <div class="field">
+                <label>Adresse</label>
+                <input type="text" name="address" value="{{collect.collecting.address}}">
+            </div>
+            <div class="two fields">
+                <div class="field">
+                    <label>Code postal</label>
+                    <input type="text" name="zip" value="{{collect.collecting.zip}}">
+                </div>
+                <div class="field">
+                    <label>Ville</label>
+                    <input type="text" name="city" value="{{collect.collecting.city}}">
+                </div>
+            </div>
+            <div class="field">
+               <label>Détails sur l'adresse</label>
+               <textarea name="details" value="{{collect.collecting.details}}" placeholder="Codes, interphone, gardien, bâtiment, étage, porte secrète, etc." rows="2"></textarea>
+            </div>
+            <div class="two fields">
+                <div class="field">
+                    <label>Quantité de cartons</label>
+                    <input type="number" name="quantity" value="{{collect.invoice.quantity}}">
+                </div>
+                <div class="field">
+                    <label>Tarif</label>
+                    <input type="number" name="price" value="{{collect.invoice.total}}">
+                </div>
+            </div>
+            <div class="two fields">
+                <div class="field">
+                    <label>Date</label>
+                    <div class="ui fluid selection dropdown js-order-date">
+                      <input type="hidden" name="date" value="{{order.shipping.date}}">
+                      <div class="text css-date">{{formatDate collect.collecting.date}}</div>
+                      <i class="dropdown icon"></i>
+                      <div class="menu">
+                        {{#each date in (collectingDates (collectingMode collect))}}
+                        <div class="item css-date" data-value="{{date.value}}" data-text="{{date.text}}">
+                          {{date.text}}
+                        </div>
+                        {{/each}}
+                      </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Heure</label>
+                    <div class="ui fluid selection dropdown js-order-time">
+                      <input type="hidden" name="time" value="{{collect.collecting.time}}">
+                      <div class="text">{{collect.collecting.time}}</div>
+                      <i class="dropdown icon"></i>
+                      <div class="menu">
+                        {{#each time in collectingSlots}}
+                        <div class="item" data-value="{{time}}" data-text="{{time}}">
+                          {{time}}
+                        </div>
+                        {{/each}}
+                      </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="ui segment large form">
+            <h3 class="ui header">
+                    <i class="tasks icon"></i>Suivi
+            </h3>
+            <div class="three fields">
+                <div class="field">
+                    <a class="ui fluid large {{#if collect.workflow.paid}}pink{{/if}} label js-collect-workflow" name="paid" style="text-align:center;">
+                        <i class="user icon"></i>Payée
+                    </a>
+                </div>
+                <div class="field">
+                    <a class="ui fluid large {{#if order.workflow.delivered}}teal{{/if}} label js-collect-workflow" name="delivered" style="text-align:center;">
+                        <i class="bicycle icon"></i>Collectée
+                    </a>
+                </div>
+                <div class="field">
+                    <a class="ui fluid large {{#if order.workflow.canceled}}black{{/if}} label js-order-workflow" name="canceled" style="text-align:center;">
+                        <i class="cancel icon"></i>Annulée
+                    </a>
+                </div>
+            </div>
+            <div class="field">
+                <label>Commentaires</label>
+                <textarea name="comments" value="{{collect.workflow.comments}}" placeholder="Commentaires sur la collecte" rows="3"></textarea>
+            </div>
+        </div>
+        <div class="ui segment large form {{#unless order.workflow.canceled}}hidden{{/unless}}">
+            <h3 class="ui header">
+                <i class="code icon"></i>Références
+            </h3>
+            <div class="two fields">
+                <div class="field">
+                    <label>_id</label>
+                    {{collect._id}}
+                </div>
+                <div class="field">
+                    <label>_charge</label>
+                    {{collect.charge.id}}
+                </div>
+            </div>
+        </div>
+        <div class="ui segment right aligned">
+            <button class="positive ui button js-collect-update" type="button">Enregistrer</button>
+            <button class="ui button js-collect-close" type="button">Fermer</button>
+            <button class="negative ui button js-collect-delete {{#unless collect.workflow.canceled}}hidden{{/unless}}" type="button">Supprimer</button>
+        </div>
+    </div>
+</template>
+
 <template name="orderMap">
     {{#if destination}}
         {{#if origin}}
@@ -287,4 +458,3 @@
     {{/if}}
     -->
 </template>
-

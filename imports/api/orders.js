@@ -9,13 +9,13 @@ export const Orders = new Mongo.Collection('orders');
 if (Meteor.isServer) {
   // This code only runs on the server
   Meteor.publish('orders', function() {
-    const filterDay = moment("20180101", "YYYYMMDD");
+    const filterDay = moment("20180901", "YYYYMMDD");
     
     // Fetch unique dates
     var dates = _.uniq(Orders.find({}, {
         sort: {'shipping.date':1}, fields: {'shipping.date': true}
       }).fetch().map(function(x) {
-        if (moment(x.shipping.date, "DD/MM/YYYY") >= moment("01/01/2018", "DD/MM/YYYY"))
+        if (moment(x.shipping.date, "DD/MM/YYYY") >= filterDay)
           {return x.shipping.date};
         }), true);
     // Sort dates

@@ -5,6 +5,7 @@ import { SSR } from 'meteor/meteorhacks:ssr';
 import '../imports/api/products.js';
 import '../imports/api/shipping.js';
 import '../imports/api/orders.js';
+import '../imports/api/collects.js';
 import '../imports/api/beacons.js';
 
 // Initialize Mailgun
