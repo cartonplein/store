@@ -1,7 +1,5 @@
 node_modules/
 settings/
 deploy.sh
-run.sh
 commit.sh
 backup.sh
-
